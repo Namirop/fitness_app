@@ -7,7 +7,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:uuid/uuid.dart';
 import 'package:workout_app/data/entities/workout_exercice_entity.dart';
 
-// HIVE : 
+// HIVE :
 // 🔹 Hive est une base de données locale (NoSQL) utilisée pour stocker des données directement sur l’appareil, sans serveur.
 // ➜ Elle permet de garder des données persistantes (offline) rapidement et simplement.
 // Chaque classe que l’on veut stocker dans Hive doit être annotée avec : @HiveType(typeId: X) ➜ "typeId" = identifiant unique pour chaque entité dans tout le projet
@@ -33,22 +33,30 @@ class WorkoutEntity {
   final List<WorkoutExerciceEntity> exercices;
 
   WorkoutEntity({
-    required this.id, 
+    required this.id,
     required this.title,
     required this.note,
     required this.date,
-    required this.exercices
+    required this.exercices,
   });
 
-  static final empty = WorkoutEntity(
-    id: const Uuid().v1(), 
-    title: '',
-    note: '',  
-    date: DateTime.now(), 
-    exercices: []
-  ); 
+  // J'ai modif static final en factory, pourquoi ? :
+  // static final : crée une SEULE FOIS l'objet, au démarrage, Dart charge cette classe et execute cette méthode.
+  // Il stocke ce WorkoutEntity dans la mémoire comme constante empty.
+  // À chaque fois que j'utilise WorkoutEntity.empty, je récupère le même objet avec le même UUID.
+  // Factory lui crée un nouvel objet à chaque appel !
+  // Il ya d'autre moyen aussi de faire, mais utiliser factory est plus propre et conventionel
+  factory WorkoutEntity.empty() {
+    return WorkoutEntity(
+      id: const Uuid().v4(),
+      title: '',
+      note: '',
+      date: DateTime.now(),
+      exercices: [],
+    );
+  }
 
-  // Comme WorkoutEntity est immuable (utilise 'final' partout), il faut une fonction 'copyWith()' qui  permet de "recréer" un workout avec des champs modifiés, sans casser l’immuabilité.
+  // Comme WorkoutEntity est immuable (utilise 'final' partout), il faut une fonction 'copyWith()' qui permet de "recréer" un workout avec des champs modifiés, sans casser l’immuabilité.
   WorkoutEntity copyWith({
     String? id,
     String? title,

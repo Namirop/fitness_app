@@ -28,7 +28,8 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     });
 
     on<AddWorkout>((event, emit) async {
-      final currentWorkout = state.workout ?? WorkoutEntity.empty;
+      final currentWorkout = state.workout ?? WorkoutEntity.empty();
+      print("ID WORKOUT : ${currentWorkout.id}");
       if (currentWorkout.title.trim().isEmpty) {
         emit(WorkoutValidationError("Veuillez ajouter un titre"));
         emit(CacheReady(currentWorkout));
@@ -65,7 +66,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     });
 
     on<UpdateWorkoutDetails>((event, emit) async {
-      final currentWorkout = state.workout ?? WorkoutEntity.empty;
+      final currentWorkout = state.workout ?? WorkoutEntity.empty();
       final updatedWorkout = currentWorkout.copyWith(
         title: event.title,
         note: event.note,
@@ -93,7 +94,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
           emit(CacheFound(cachedWorkout));
           // Si pas, on initialise un nouveau
         } else {
-          emit(CacheReady(WorkoutEntity.empty));
+          emit(CacheReady(WorkoutEntity.empty()));
         }
       } catch (e) {
         emit(CacheFailure('Erreur cache : $e'));
@@ -101,19 +102,19 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     });
 
     on<ResumeCache>((event, emit) async {
-      emit(CacheReady(state.workout ?? WorkoutEntity.empty));
+      emit(CacheReady(state.workout ?? WorkoutEntity.empty()));
     });
 
     on<NewCache>((event, emit) async {
       await cacheService.clearCache();
-      emit(CacheReady(WorkoutEntity.empty));
+      emit(CacheReady(WorkoutEntity.empty()));
     });
 
     on<AddExerciseToCache>((event, emit) async {
       //emit(CacheLoading(workout: state.workout));
       try {
         // 1. Récupérer le workout actuel depuis le state
-        final currentWorkout = state.workout ?? WorkoutEntity.empty;
+        final currentWorkout = state.workout ?? WorkoutEntity.empty();
 
         // 2. Fetch l'exercice depuis l'API (délégation au repository)
         final exercise = await repository.fetchExerciseById(event.exerciseId);
@@ -129,14 +130,14 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
         emit(CacheReady(updatedWorkout));
       } catch (e) {
         // Gestion d'erreur : on garde le workout actuel et on informe l'utilisateur
-        final currentWorkout = state.workout ?? WorkoutEntity.empty;
+        final currentWorkout = state.workout ?? WorkoutEntity.empty();
         emit(CacheReady(currentWorkout));
         // TODO: Ajouter un SnackBar ou ErrorState pour notifier l'user
       }
     });
 
     on<UpdateExerciseDetails>((event, emit) async {
-      final currentWorkout = state.workout ?? WorkoutEntity.empty;
+      final currentWorkout = state.workout ?? WorkoutEntity.empty();
       final index = event.exIndex;
 
       // On récupère la liste d'exercices du workout courant.
@@ -173,7 +174,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
         emit(CacheReady(updatedWorkout));
       } catch (e) {
         // Gestion d'erreur : on garde le workout actuel et on informe l'utilisateur
-        final currentWorkout = state.workout ?? WorkoutEntity.empty;
+        final currentWorkout = state.workout ?? WorkoutEntity.empty();
         emit(CacheReady(currentWorkout));
         // TODO: Ajouter un SnackBar ou ErrorState pour notifier l'user
       }

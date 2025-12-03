@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:workout_app/blocs/WorkoutBloc/workout_bloc.dart';
 import 'package:workout_app/data/entities/exercice_entity.dart';
 import 'package:workout_app/data/entities/workout_entity.dart';
@@ -10,8 +11,9 @@ import 'package:workout_app/data/services/workout_cache_service.dart';
 import 'package:workout_app/screens/home_screen.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
+  WidgetsFlutterBinding.ensureInitialized();
 
+  await initializeDateFormatting('fr_FR', null);
   // Indique à l'app que Hive est utilisé
   await Hive.initFlutter();
 
@@ -25,7 +27,9 @@ void main() async {
   // Pourquoi on initialise hive dans le main et pas dans le build ou autre => car c'est une initialisation asynchrone, ce que l'on ne peut pas faire dans un build
   // Et on ne veut qu'une seule instance de la box Hive, on le fait donc ici pour ensuite l'injecter dans le build juste en dessous
   // On instancie donc pas le repo, le cache et la box dans le BLoC mais à l'exterieur (ici), ce qui est mieux, et une seule fois (singleton)
-  final box = await Hive.openBox<WorkoutEntity>('draftWorkout'); // ouverture ici une seule fois
+  final box = await Hive.openBox<WorkoutEntity>(
+    'draftWorkout',
+  ); // ouverture ici une seule fois
   runApp(MyApp(box: box));
 }
 
@@ -36,10 +40,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [BlocProvider(create: (context) => WorkoutBloc(
-        repository: ApiRepository(),
-        cacheService: WorkoutCacheService(box)
-      ))],
+      providers: [
+        BlocProvider(
+          create: (context) => WorkoutBloc(
+            repository: ApiRepository(),
+            cacheService: WorkoutCacheService(box),
+          ),
+        ),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',

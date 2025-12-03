@@ -33,7 +33,8 @@ final class CacheReady extends WorkoutState {
 
 final class CacheFailure extends WorkoutState {
   final String message;
-  CacheFailure(this.message, {WorkoutEntity? workout}) : super(workout: workout);
+  CacheFailure(this.message, {WorkoutEntity? workout})
+    : super(workout: workout);
 }
 
 // ============================================================================
@@ -41,25 +42,22 @@ final class CacheFailure extends WorkoutState {
 // ============================================================================
 
 final class GetExistingWorkoutsLoading extends WorkoutState {
-  GetExistingWorkoutsLoading({WorkoutEntity? workout}) : super(workout: workout);
+  GetExistingWorkoutsLoading({WorkoutEntity? workout})
+    : super(workout: workout);
 }
 
 final class GetExistingWorkoutsSuccess extends WorkoutState {
   final List<WorkoutEntity> workouts;
-  
-  GetExistingWorkoutsSuccess(
-    this.workouts, {
-    WorkoutEntity? workout,
-  }) : super(workout: workout);
+
+  GetExistingWorkoutsSuccess(this.workouts, {WorkoutEntity? workout})
+    : super(workout: workout);
 }
 
 final class GetExistingWorkoutsFailure extends WorkoutState {
   final String message;
-  
-  GetExistingWorkoutsFailure(
-    this.message, {
-    WorkoutEntity? workout,
-  }) : super(workout: workout);
+
+  GetExistingWorkoutsFailure(this.message, {WorkoutEntity? workout})
+    : super(workout: workout);
 }
 
 // ============================================================================
@@ -72,20 +70,16 @@ final class FetchExercicesLoading extends WorkoutState {
 
 final class FetchExercicesSuccess extends WorkoutState {
   final List<ExercisePreviewEntity> exercices;
-  
-  FetchExercicesSuccess(
-    this.exercices, {
-    WorkoutEntity? workout,
-  }) : super(workout: workout);
+
+  FetchExercicesSuccess(this.exercices, {WorkoutEntity? workout})
+    : super(workout: workout);
 }
 
 final class FetchExercicesFailure extends WorkoutState {
   final String message;
-  
-  FetchExercicesFailure(
-    this.message, {
-    WorkoutEntity? workout,
-  }) : super(workout: workout);
+
+  FetchExercicesFailure(this.message, {WorkoutEntity? workout})
+    : super(workout: workout);
 }
 
 // ============================================================================
@@ -102,11 +96,9 @@ final class AddWorkoutSuccess extends WorkoutState {
 
 final class AddWorkoutFailure extends WorkoutState {
   final String message;
-  
-  AddWorkoutFailure(
-    this.message, {
-    WorkoutEntity? workout,
-  }) : super(workout: workout);
+
+  AddWorkoutFailure(this.message, {WorkoutEntity? workout})
+    : super(workout: workout);
 }
 
 // ============================================================================
@@ -123,11 +115,9 @@ final class DeleteWorkoutSuccess extends WorkoutState {
 
 final class DeleteWorkoutFailure extends WorkoutState {
   final String message;
-  
-  DeleteWorkoutFailure(
-    this.message, {
-    WorkoutEntity? workout,
-  }) : super(workout: workout);
+
+  DeleteWorkoutFailure(this.message, {WorkoutEntity? workout})
+    : super(workout: workout);
 }
 
 // ============================================================================
@@ -136,7 +126,7 @@ final class DeleteWorkoutFailure extends WorkoutState {
 
 final class WorkoutValidationError extends WorkoutState {
   final String message;
-  WorkoutValidationError(this.message, {WorkoutEntity? workout}) 
+  WorkoutValidationError(this.message, {WorkoutEntity? workout})
     : super(workout: workout);
 }
 
@@ -150,12 +140,12 @@ final class SavingWorkout extends WorkoutState {
 
 final class WorkoutSaved extends WorkoutState {
   final String message;
-  WorkoutSaved(this.message, {WorkoutEntity? workout}) 
+  WorkoutSaved(this.message, {WorkoutEntity? workout})
     : super(workout: workout);
 }
 
 final class WorkoutSavedError extends WorkoutState {
   final String message;
-  WorkoutSavedError(this.message, {WorkoutEntity? workout}) 
+  WorkoutSavedError(this.message, {WorkoutEntity? workout})
     : super(workout: workout);
 }
