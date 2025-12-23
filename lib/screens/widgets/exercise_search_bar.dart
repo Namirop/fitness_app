@@ -110,7 +110,7 @@ class _ExerciseSearchBarState extends State<ExerciseSearchBar> {
                     shrinkWrap: true,
                     itemBuilder: (context, index) {
                       final ex = state.exercises[index];
-                      final isAlreadyInWorkout = widget.workout!.exercices.any(
+                      final isAlreadyInWorkout = widget.workout!.exercises.any(
                         (workoutEx) => workoutEx.exercise.id == ex.exerciseId,
                       );
                       if (isAlreadyInWorkout) {

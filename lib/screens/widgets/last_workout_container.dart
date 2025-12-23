@@ -202,9 +202,9 @@ class LastWorkoutContainerState extends State<LastWorkoutContainer> {
                 thickness: 2,
                 radius: Radius.circular(10),
                 child: ListView.builder(
-                  itemCount: mostRecentWorkout.exercices.length,
+                  itemCount: mostRecentWorkout.exercises.length,
                   itemBuilder: (context, index) {
-                    final exercise = mostRecentWorkout.exercices[index];
+                    final exercise = mostRecentWorkout.exercises[index];
                     return Padding(
                       padding: const EdgeInsets.only(
                         top: 5,

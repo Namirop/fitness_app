@@ -1,41 +1,41 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of '../workout_exercise_entity.dart';
+part of '../exercise_entity.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class WorkoutExerciceEntityAdapter extends TypeAdapter<WorkoutExerciseEntity> {
+class ExerciseEntityAdapter extends TypeAdapter<ExerciseEntity> {
   @override
-  final int typeId = 2;
+  final int typeId = 0;
 
   @override
-  WorkoutExerciseEntity read(BinaryReader reader) {
+  ExerciseEntity read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return WorkoutExerciseEntity(
-      exercise: fields[0] as ExerciseEntity,
-      sets: fields[1] as int,
-      reps: fields[2] as int,
-      weight: fields[3] as int,
+    return ExerciseEntity(
+      id: fields[0] as String,
+      name: fields[1] as String,
+      description: fields[2] as String,
+      imageUrl: fields[3] as String,
     );
   }
 
   @override
-  void write(BinaryWriter writer, WorkoutExerciseEntity obj) {
+  void write(BinaryWriter writer, ExerciseEntity obj) {
     writer
       ..writeByte(4)
       ..writeByte(0)
-      ..write(obj.exercise)
+      ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.sets)
+      ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.reps)
+      ..write(obj.description)
       ..writeByte(3)
-      ..write(obj.weight);
+      ..write(obj.imageUrl);
   }
 
   @override
@@ -44,7 +44,7 @@ class WorkoutExerciceEntityAdapter extends TypeAdapter<WorkoutExerciseEntity> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is WorkoutExerciceEntityAdapter &&
+      other is ExerciseEntityAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

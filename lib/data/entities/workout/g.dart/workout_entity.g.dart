@@ -21,7 +21,7 @@ class WorkoutEntityAdapter extends TypeAdapter<WorkoutEntity> {
       title: fields[1] as String,
       note: fields[2] as String,
       date: fields[3] as DateTime,
-      exercices: (fields[4] as List).cast<WorkoutExerciseEntity>(),
+      exercises: (fields[4] as List).cast<WorkoutExerciseEntity>(),
     );
   }
 
@@ -38,7 +38,7 @@ class WorkoutEntityAdapter extends TypeAdapter<WorkoutEntity> {
       ..writeByte(3)
       ..write(obj.date)
       ..writeByte(4)
-      ..write(obj.exercices);
+      ..write(obj.exercises);
   }
 
   @override

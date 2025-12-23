@@ -19,7 +19,7 @@ class WorkoutExerciseModel extends WorkoutExerciseEntity {
   }
 
   Map<String, dynamic> toJson() => {
-    "exercice": ExerciseModel.fromEntity(exercise).toJson(),
+    "exercise": ExerciseModel.fromEntity(exercise).toJson(),
     "sets": sets,
     "reps": reps,
     "weight": weight,
@@ -27,7 +27,7 @@ class WorkoutExerciseModel extends WorkoutExerciseEntity {
 
   factory WorkoutExerciseModel.fromJson(Map<String, dynamic> json) {
     return WorkoutExerciseModel(
-      exercise: ExerciseModel.fromJson(json['exercice']),
+      exercise: ExerciseModel.fromJson(json['exercise']),
       sets: json['sets'],
       reps: json['reps'],
       weight: json['weight'],

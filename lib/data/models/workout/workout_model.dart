@@ -10,7 +10,7 @@ class WorkoutModel extends WorkoutEntity {
     required super.title,
     required super.note,
     required super.date,
-    required super.exercices,
+    required super.exercises,
   });
 
   factory WorkoutModel.fromEntity(WorkoutEntity entity) {
@@ -19,7 +19,7 @@ class WorkoutModel extends WorkoutEntity {
       title: entity.title,
       note: entity.note,
       date: entity.date,
-      exercices: entity.exercices,
+      exercises: entity.exercises,
     );
   }
 
@@ -31,10 +31,10 @@ class WorkoutModel extends WorkoutEntity {
       title: json['title'],
       note: json['note'],
       date: DateTime.parse(json['date']),
-      // 'json['exercices'] => le type renvoyé est dynamic, et pour pouvoir appeler un 'map' il nous faut un type List.
+      // 'json['exercises'] => le type renvoyé est dynamic, et pour pouvoir appeler un 'map' il nous faut un type List.
       // Donc on dit explicitement a Dart qu'il doit considérer ça comme une List.
       // Ensuite le '.toList()' comme on l'a vu permet de convertir un Iterable (ce qui est renvoyer par un map par défaut) en une liste, car c'est ce qui est demandé dans le modèle ("List<WorkoutExerciceEntity>")
-      exercices: (json['exercices'] as List)
+      exercises: (json['exercises'] as List)
           .map((ex) => WorkoutExerciseModel.fromJson(ex))
           .toList(),
     );
@@ -47,7 +47,7 @@ class WorkoutModel extends WorkoutEntity {
       'title': title,
       'note': note,
       'date': date.toUtc().toIso8601String(),
-      'exercices': exercices
+      'exercises': exercises
           .map((ex) => WorkoutExerciseModel.fromEntity(ex).toJson())
           .toList(),
     };

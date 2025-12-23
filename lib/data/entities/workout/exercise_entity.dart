@@ -1,7 +1,7 @@
 import 'package:hive_flutter/adapters.dart';
 import 'package:uuid/uuid.dart';
 
-part 'g.dart/exercice_entity.g.dart';
+part 'g.dart/exercise_entity.g.dart';
 
 @HiveType(typeId: 0)
 class ExerciseEntity {

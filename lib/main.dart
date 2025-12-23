@@ -27,8 +27,8 @@ void main() async {
   //await Hive.deleteBoxFromDisk('draftWorkout');
 
   Hive.registerAdapter(WorkoutEntityAdapter());
-  Hive.registerAdapter(WorkoutExerciceEntityAdapter());
-  Hive.registerAdapter(ExerciceEntityAdapter());
+  Hive.registerAdapter(WorkoutExerciseEntityAdapter());
+  Hive.registerAdapter(ExerciseEntityAdapter());
   Hive.registerAdapter(ProfilEntityAdapter());
 
   // Pourquoi on initialise hive dans le main et pas dans le build ou autre => car c'est une initialisation asynchrone, ce que l'on ne peut pas faire dans un build

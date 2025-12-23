@@ -119,7 +119,7 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
           );
         }
         final workout = state.currentWorkout;
-        final exerciseToDisplay = workout?.exercices ?? [];
+        final exerciseToDisplay = workout.exercises;
         return Scaffold(
           body: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
@@ -317,7 +317,7 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
                                                         'workout_title_${DateTime.now().toString()}',
                                                       ),
                                                       initialValue:
-                                                          workout?.title,
+                                                          workout.title,
                                                       decoration:
                                                           InputDecoration(
                                                             hintText: "Titre",
@@ -367,8 +367,7 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
                                                       await showDatePicker(
                                                         context: context,
                                                         initialDate:
-                                                            workout?.date ??
-                                                            DateTime.now(),
+                                                            workout.date,
                                                         firstDate: DateTime(
                                                           2020,
                                                         ),
@@ -408,25 +407,11 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
                                                           ),
                                                       child: Center(
                                                         child: Text(
-                                                          workout?.date != null
-                                                              ? DateFormat(
-                                                                  'dd/MM/yyyy',
-                                                                ).format(
-                                                                  workout!.date,
-                                                                )
-                                                              : widget.initialDate !=
-                                                                    null
-                                                              ? DateFormat(
-                                                                  'dd/MM/yyyy',
-                                                                ).format(
-                                                                  widget
-                                                                      .initialDate!,
-                                                                )
-                                                              : DateFormat(
-                                                                  'dd/MM/yyyy',
-                                                                ).format(
-                                                                  DateTime.now(),
-                                                                ),
+                                                          DateFormat(
+                                                            'dd/MM/yyyy',
+                                                          ).format(
+                                                            workout.date,
+                                                          ),
                                                           style:
                                                               const TextStyle(
                                                                 fontSize: 12,
@@ -462,7 +447,7 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
                                                   key: ValueKey(
                                                     'workout_note_${DateTime.now().toString()}',
                                                   ),
-                                                  initialValue: workout?.note,
+                                                  initialValue: workout.note,
                                                   decoration: InputDecoration(
                                                     hintText: "Note",
                                                     isDense: true,

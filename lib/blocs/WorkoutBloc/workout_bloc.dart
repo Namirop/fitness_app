@@ -54,7 +54,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
       }
 
       // 1. Vérifier que y'a un titre et un exo
-      if (currentWorkout.exercices.isEmpty) {
+      if (currentWorkout.exercises.isEmpty) {
         emit(
           state.copyWith(
             saveWorkoutStatus: SaveWorkoutStatus.failure,
@@ -176,6 +176,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
 
         // Cache trouvé
         if (cachedWorkout != null) {
+          print(cachedWorkout.exercises[0].exercise.name);
           emit(
             state.copyWith(
               cacheStatus: CacheStatus.found,
@@ -244,7 +245,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
         final exercise = await repository.fetchExerciseById(event.exerciseId);
         final workoutExercice = WorkoutExerciseEntity(exercise: exercise);
         final updatedWorkout = currentWorkout.copyWith(
-          exercices: [...currentWorkout.exercices, workoutExercice],
+          exercises: [...currentWorkout.exercises, workoutExercice],
         );
         if (state.isEditingMode == false) {
           await cacheService.saveCachedWorkout(updatedWorkout);
@@ -274,7 +275,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
       final index = event.exIndex;
       try {
         final updatedExercises = List<WorkoutExerciseEntity>.from(
-          currentWorkout.exercices,
+          currentWorkout.exercises,
         );
 
         updatedExercises[index] = updatedExercises[index].copyWith(
@@ -284,7 +285,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
         );
 
         final updatedWorkout = currentWorkout.copyWith(
-          exercices: updatedExercises,
+          exercises: updatedExercises,
         );
         if (state.isEditingMode == false) {
           await cacheService.saveCachedWorkout(updatedWorkout);
@@ -313,12 +314,12 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
       final currentWorkout = state.currentWorkout;
       try {
         // Ici on récupère tout les exercices qui n'ont pas un id équivalent à celui que l'on veut supp (facon "pro" de supprimer quoi)
-        final updatedExercises = currentWorkout.exercices
+        final updatedExercises = currentWorkout.exercises
             .where((workoutEx) => workoutEx.exercise.id != event.exerciseId)
             .toList();
 
         final updatedWorkout = currentWorkout.copyWith(
-          exercices: updatedExercises,
+          exercises: updatedExercises,
         );
         if (state.isEditingMode == false) {
           await cacheService.saveCachedWorkout(updatedWorkout);

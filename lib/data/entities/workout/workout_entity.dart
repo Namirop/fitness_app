@@ -30,14 +30,14 @@ class WorkoutEntity {
   @HiveField(3)
   final DateTime date;
   @HiveField(4)
-  final List<WorkoutExerciseEntity> exercices;
+  final List<WorkoutExerciseEntity> exercises;
 
   WorkoutEntity({
     required this.id,
     required this.title,
     required this.note,
     required this.date,
-    required this.exercices,
+    required this.exercises,
   });
 
   // J'ai modif static final en factory, pourquoi ? :
@@ -52,7 +52,7 @@ class WorkoutEntity {
       title: '',
       note: '',
       date: DateTime.now(),
-      exercices: [],
+      exercises: [],
     );
   }
 
@@ -62,14 +62,14 @@ class WorkoutEntity {
     String? title,
     String? note,
     DateTime? date,
-    List<WorkoutExerciseEntity>? exercices,
+    List<WorkoutExerciseEntity>? exercises,
   }) {
     return WorkoutEntity(
       id: id ?? this.id,
       title: title ?? this.title,
       note: note ?? this.note,
       date: date ?? this.date,
-      exercices: exercices ?? this.exercices,
+      exercises: exercises ?? this.exercises,
     );
   }
 }
