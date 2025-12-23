@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class CustomIconButton extends StatelessWidget {
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final double? size;
   final Color? color;
   final double? radius;
-  final IconData icon;
+  final Widget icon;
   const CustomIconButton({
-    required this.onTap,
+    this.onTap,
     this.size,
     this.color,
     this.radius,
@@ -16,17 +16,39 @@ class CustomIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: size ?? 45,
-        height: size ?? 45,
+    return Material(
+      color: Colors.transparent,
+      child: Ink(
+        width: size ?? 50,
+        height: size ?? 50,
         decoration: BoxDecoration(
-          color: color ?? Colors.white60,
-          borderRadius: BorderRadius.circular(radius ?? 15),
+          color: color ?? const Color.fromARGB(117, 255, 255, 255),
+          borderRadius: BorderRadius.circular(radius ?? 18),
         ),
-        child: Icon(icon),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(radius ?? 18),
+          splashColor: Colors.black.withOpacity(0.2),
+          highlightColor: Colors.black.withOpacity(0.1),
+          child: Center(child: icon),
+        ),
       ),
     );
   }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return GestureDetector(
+  //     onTap: onTap,
+  //     child: Container(
+  //       width: size ?? 50,
+  //       height: size ?? 50,
+  //       decoration: BoxDecoration(
+  //         color: color ?? const Color.fromARGB(117, 255, 255, 255),
+  //         borderRadius: BorderRadius.circular(radius ?? 18),
+  //       ),
+  //       child: Center(child: icon),
+  //     ),
+  //   );
+  // }
 }

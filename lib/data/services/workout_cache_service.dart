@@ -4,14 +4,14 @@
 // - Nettoyer le cache
 
 import 'package:hive_flutter/adapters.dart';
-import 'package:workout_app/data/entities/workout_entity.dart';
+import 'package:workout_app/data/entities/workout/workout_entity.dart';
 
 class WorkoutCacheService {
   final Box<WorkoutEntity> _box;
 
   WorkoutCacheService(this._box);
 
-  // Permet de récupérer le workout en cours 
+  // Permet de récupérer le workout en cours
   // Retourne null si pas de workout en cours
   WorkoutEntity? getCachedWorkout() {
     return _box.get("current");
@@ -22,7 +22,7 @@ class WorkoutCacheService {
     await _box.put("current", workout);
   }
 
-  Future<void> clearCache() async {
+  Future<void> clearCachedWorkout() async {
     await _box.delete("current");
   }
 }

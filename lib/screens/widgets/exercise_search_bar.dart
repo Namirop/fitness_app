@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:workout_app/blocs/WorkoutBloc/workout_bloc.dart';
 import 'package:workout_app/blocs/WorkoutBloc/workout_event.dart';
 import 'package:workout_app/blocs/WorkoutBloc/workout_state.dart';
-import 'package:workout_app/data/entities/workout_entity.dart';
+import 'package:workout_app/data/entities/workout/workout_entity.dart';
 
 class ExerciseSearchBar extends StatefulWidget {
   final WorkoutEntity? workout;
@@ -24,6 +24,12 @@ class _ExerciseSearchBarState extends State<ExerciseSearchBar> {
   Timer? _debounceSearchExercise;
   bool _showSuggestions = false;
 
+  // Permet d’exécuter une fonction à chaque fois que le texte change dans le TextField.
+  // Ici '_showSuggestions' devient true quand il y a + de 2 caractères dans le TextField
+  // Ce qui permet de redessiner l’interface en conséquence
+  // Sans 'setState', la variable _showSuggestions changerait, mais le widget ne serait jamais reconstruit → rien ne bougerait à l’écran.
+  // Le 'addListener' toujours dans le 'initState' car bon moment pour initialiser des objets et leur attacher des listeners.
+  // tout ce qu'on connectes ici, on le déconnecte dans 'dispose()'.
   @override
   void initState() {
     super.initState();
@@ -63,9 +69,7 @@ class _ExerciseSearchBarState extends State<ExerciseSearchBar> {
               _debounceSearchExercise = Timer(
                 const Duration(milliseconds: 500),
                 () {
-                  if (query.length > 2) {
-                    context.read<WorkoutBloc>().add(FetchExercices(query));
-                  }
+                  context.read<WorkoutBloc>().add(FetchExercises(query));
                 },
               );
             },
@@ -77,32 +81,35 @@ class _ExerciseSearchBarState extends State<ExerciseSearchBar> {
               : CrossFadeState.showSecond,
           duration: const Duration(milliseconds: 200),
           firstChild: SizedBox(
-            height: 200,
+            height: 180,
             child: BlocBuilder<WorkoutBloc, WorkoutState>(
               builder: (context, state) {
                 if (_controller.text.isEmpty) {
                   return const SizedBox();
                 }
-                if (state is FetchExercicesLoading) {
+                if (state.fetchExercisesStatus ==
+                    FetchExercisesStatus.loading) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                if (state is FetchExercicesFailure) {
+                if (state.fetchExercisesStatus ==
+                    FetchExercisesStatus.failure) {
                   return Center(
                     child: Text(
-                      "Erreur : ${state.message}",
+                      "${state.fetchExercisesErrorString}",
                       style: const TextStyle(color: Colors.red),
                     ),
                   );
                 }
-                if (state is FetchExercicesSuccess) {
-                  if (state.exercices.isEmpty) {
+                if (state.fetchExercisesStatus ==
+                    FetchExercisesStatus.success) {
+                  if (state.exercises.isEmpty) {
                     return const Center(child: Text("No result found"));
                   }
                   return ListView.builder(
-                    itemCount: state.exercices.length,
+                    itemCount: state.exercises.length,
                     shrinkWrap: true,
                     itemBuilder: (context, index) {
-                      final ex = state.exercices[index];
+                      final ex = state.exercises[index];
                       final isAlreadyInWorkout = widget.workout!.exercices.any(
                         (workoutEx) => workoutEx.exercise.id == ex.exerciseId,
                       );
@@ -125,7 +132,7 @@ class _ExerciseSearchBarState extends State<ExerciseSearchBar> {
                             icon: const Icon(Icons.delete),
                             onPressed: () {
                               context.read<WorkoutBloc>().add(
-                                RemoveExercise(ex.exerciseId),
+                                RemoveExercise(exerciseId: ex.exerciseId),
                               );
                               setState(() {});
                             },
@@ -147,7 +154,7 @@ class _ExerciseSearchBarState extends State<ExerciseSearchBar> {
                         ),
                         onTap: () {
                           context.read<WorkoutBloc>().add(
-                            AddExerciseToCache(ex.exerciseId),
+                            AddExercise(exerciseId: ex.exerciseId),
                           );
                           _controller.clear();
                           _debounceSearchExercise?.cancel();

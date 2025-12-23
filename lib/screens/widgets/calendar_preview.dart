@@ -3,29 +3,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:workout_app/blocs/WorkoutBloc/workout_bloc.dart';
 import 'package:workout_app/blocs/WorkoutBloc/workout_state.dart';
-import 'package:workout_app/screens/calendar_screen.dart';
+import 'package:workout_app/cubit/navigation_cubit.dart';
 
 class CalendarPreview extends StatelessWidget {
   final List<DateTime> currentWeek;
-  // Un Set est une liste mais sans doublon => pratique pour le cas ici.
-  final Set<DateTime> workoutDays;
-
-  const CalendarPreview({required this.currentWeek, required this.workoutDays});
+  const CalendarPreview({required this.currentWeek});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<WorkoutBloc, WorkoutState>(
-      buildWhen: (previous, current) => current is GetExistingWorkoutsSuccess,
+      buildWhen: (previous, current) =>
+          previous.existingWorkoutsStatus != current.existingWorkoutsStatus,
       builder: (context, state) {
         return GestureDetector(
-          onTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CalendarScreen(workoutDays: workoutDays),
-              ),
-            );
-          },
+          onTap: () => context.read<NavigationCubit>().goToPage(1),
           child: Container(
             height: 50,
             decoration: BoxDecoration(
@@ -35,7 +26,7 @@ class CalendarPreview extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: currentWeek.map((day) {
-                final hasWorkout = workoutDays.contains(
+                final hasWorkout = state.workoutDays.contains(
                   DateTime(day.year, day.month, day.day),
                 );
                 final isToday = day.day == DateTime.now().day;
@@ -60,6 +51,7 @@ class CalendarPreview extends StatelessWidget {
                             DateFormat('MMM', 'fr_FR').format(day),
                             style: TextStyle(
                               fontSize: 9,
+                              fontFamily: "Michroma",
                               color: hasWorkout ? Colors.amber : Colors.black,
                             ),
                           ),
@@ -67,6 +59,7 @@ class CalendarPreview extends StatelessWidget {
                             '${day.day}',
                             style: TextStyle(
                               fontSize: 12,
+                              fontFamily: "Michroma",
                               fontWeight: FontWeight.bold,
                               color: hasWorkout ? Colors.amber : Colors.black,
                             ),

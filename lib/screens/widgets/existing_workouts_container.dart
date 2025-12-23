@@ -22,27 +22,37 @@ class _ExistingWorkoutsContainerState extends State<ExistingWorkoutsContainer> {
       color: Colors.black12,
       child: BlocBuilder<WorkoutBloc, WorkoutState>(
         buildWhen: (previous, current) =>
-            current is GetExistingWorkoutsLoading ||
-            current is GetExistingWorkoutsSuccess ||
-            current is GetExistingWorkoutsFailure,
+            previous.existingWorkoutsStatus != current.existingWorkoutsStatus,
         builder: (context, state) {
-          if (state is GetExistingWorkoutsLoading) {
+          if (state.existingWorkoutsStatus == ExistingWorkoutsStatus.loading) {
             return Center(
               child: CircularProgressIndicator(color: Colors.white38),
             );
           }
 
-          if (state is GetExistingWorkoutsSuccess) {
-            if (state.workouts.isNotEmpty) {
+          if (state.existingWorkoutsStatus == ExistingWorkoutsStatus.success) {
+            if (state.existingWorkouts.isNotEmpty) {
+              final workouts = state.existingWorkouts;
+              final now = DateTime.now();
+              // Trouve le lundi de la semaine actuelle
+              final monday = now.subtract(Duration(days: now.weekday - 1));
+              // Trouve le dimanche
+              final sunday = monday.add(Duration(days: 6));
+
+              // Filtre les workouts de cette semaine
+              final workoutsOfTheWeek = workouts.where((w) {
+                return w.date.isAfter(monday.subtract(Duration(days: 1))) &&
+                    w.date.isBefore(sunday.add(Duration(days: 1)));
+              }).toList();
               return ListView.builder(
                 itemCount:
-                    state.workouts.length +
+                    workoutsOfTheWeek.length +
                     1, // +1 pour la carte 'Ajout' de fin
                 itemBuilder: (context, int i) {
-                  if (i == state.workouts.length) {
+                  if (i == workoutsOfTheWeek.length) {
                     return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => AddWorkoutScreen(),
@@ -50,7 +60,11 @@ class _ExistingWorkoutsContainerState extends State<ExistingWorkoutsContainer> {
                         );
                         // Ne pas oublier cette ligne pour faire comprendre qu'en revenant de la page d'ajout, on doit bien appeler de nouveau cette état, pour que le blocbuilder
                         // se rebuild sur base des current indiqué => pour permettre une recharge au retour
-                        context.read<WorkoutBloc>().add(GetExistingWorkouts());
+                        if (mounted) {
+                          context.read<WorkoutBloc>().add(
+                            GetExistingWorkouts(),
+                          );
+                        }
                       },
                       child: Card(
                         color: Colors.white10,
@@ -74,17 +88,29 @@ class _ExistingWorkoutsContainerState extends State<ExistingWorkoutsContainer> {
                       ),
                     );
                   }
-
-                  final workout = state.workouts[i];
                   return GestureDetector(
-                    onDoubleTap: () {},
+                    onDoubleTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AddWorkoutScreen(
+                            workoutToEdit: workoutsOfTheWeek[i],
+                          ),
+                        ),
+                      );
+                      context.read<WorkoutBloc>().add(GetExistingWorkouts());
+                    },
                     child: Card(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("${workout.title} -"),
+                          Text("${workoutsOfTheWeek[i].title} -"),
                           SizedBox(width: 10),
-                          Text(DateFormat('d MMM yyyy').format(workout.date)),
+                          Text(
+                            DateFormat(
+                              'd MMM yyyy',
+                            ).format(workoutsOfTheWeek[i].date),
+                          ),
                         ],
                       ),
                     ),
@@ -101,7 +127,9 @@ class _ExistingWorkoutsContainerState extends State<ExistingWorkoutsContainer> {
                         builder: (context) => AddWorkoutScreen(),
                       ),
                     );
-                    context.read<WorkoutBloc>().add(GetExistingWorkouts());
+                    if (mounted) {
+                      context.read<WorkoutBloc>().add(GetExistingWorkouts());
+                    }
                   },
                   child: Container(
                     width: 45,
@@ -117,13 +145,13 @@ class _ExistingWorkoutsContainerState extends State<ExistingWorkoutsContainer> {
             }
           }
 
-          if (state is GetExistingWorkoutsFailure) {
+          if (state.existingWorkoutsStatus == ExistingWorkoutsStatus.failure) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    state.message,
+                    state.existingWorkoutsErrorString!,
                     style: const TextStyle(color: Colors.red),
                   ),
                   const SizedBox(height: 10),

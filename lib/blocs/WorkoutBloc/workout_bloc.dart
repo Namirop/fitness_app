@@ -1,167 +1,317 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:workout_app/blocs/WorkoutBloc/workout_event.dart';
 import 'package:workout_app/blocs/WorkoutBloc/workout_state.dart';
-import 'package:workout_app/data/entities/workout_entity.dart';
-import 'package:workout_app/data/entities/workout_exercice_entity.dart';
-import 'package:workout_app/data/repositories/api_repository.dart';
+import 'package:workout_app/data/entities/workout/workout_entity.dart';
+import 'package:workout_app/data/entities/workout/workout_exercise_entity.dart';
+import 'package:workout_app/data/repositories/workout_repository.dart';
 import 'package:workout_app/data/services/workout_cache_service.dart';
 
 class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
-  final ApiRepository repository;
+  final WorkoutRepository repository;
   final WorkoutCacheService cacheService;
   // Constructeur du bloc, qui a besoin du repo et du cache à son intialisation, on les injectera à sa création dans le main.
   WorkoutBloc({required this.repository, required this.cacheService})
-    : super(WorkoutInitialState()) {
+    : super(WorkoutState(currentWorkout: WorkoutEntity.empty())) {
     on<GetExistingWorkouts>((event, emit) async {
       try {
-        emit(GetExistingWorkoutsLoading());
-        final workouts = await repository.getWorkouts();
+        emit(
+          state.copyWith(
+            existingWorkoutsStatus: ExistingWorkoutsStatus.loading,
+          ),
+        );
+        final existingWorkout = await repository.getWorkouts();
         // On peut retouner un List<WorkoutModel> là où on attend une List<WorkoutEntity>, parce que chaque WorkoutModel est compatible avec WorkoutEntity
-        emit(GetExistingWorkoutsSuccess(workouts));
+        emit(
+          state.copyWith(
+            existingWorkoutsStatus: ExistingWorkoutsStatus.success,
+            existingWorkouts: existingWorkout,
+          ),
+        );
       } catch (e) {
         emit(
-          GetExistingWorkoutsFailure(
-            'Récupération des workouts existants impossible : $e',
+          state.copyWith(
+            existingWorkoutsStatus: ExistingWorkoutsStatus.failure,
+            existingWorkoutsErrorString: e.toString(),
           ),
         );
       }
     });
 
-    on<AddWorkout>((event, emit) async {
-      final currentWorkout = state.workout ?? WorkoutEntity.empty();
-      print("ID WORKOUT : ${currentWorkout.id}");
+    on<SubmitWorkout>((event, emit) async {
+      final currentWorkout = state.currentWorkout;
+
+      // Quand on émet un status (success/failure), reset TOUJOURS les messages opposés.
+      // => garantit un état toujours cohérent.
       if (currentWorkout.title.trim().isEmpty) {
-        emit(WorkoutValidationError("Veuillez ajouter un titre"));
-        emit(CacheReady(currentWorkout));
+        emit(
+          state.copyWith(
+            saveWorkoutStatus: SaveWorkoutStatus.failure,
+            saveWorkoutErrorString: "Ajoutez un titre au workout",
+            saveWorkoutSuccessString: null,
+          ),
+        );
         return;
       }
 
       // 1. Vérifier que y'a un titre et un exo
       if (currentWorkout.exercices.isEmpty) {
-        emit(WorkoutValidationError("Veuillez ajouter un exercice"));
-        emit(CacheReady(currentWorkout));
+        emit(
+          state.copyWith(
+            saveWorkoutStatus: SaveWorkoutStatus.failure,
+            saveWorkoutErrorString: "Ajoutez au moins un exercice au workout",
+            saveWorkoutSuccessString: null,
+          ),
+        );
         return;
       }
-
-      // // ✅ Validation des détails des exercices (optionnel)
-      // final hasInvalidExercise = currentWorkout.exercices.any(
-      //   (ex) => ex.sets == 0 || ex.reps == 0,
-      // );
-
-      // if (hasInvalidExercise) {
-      //   emit(WorkoutValidationError('Remplis les sets/reps pour tous les exercices'));
-      //   return;
-      // }
-
-      emit(SavingWorkout());
+      emit(state.copyWith(saveWorkoutStatus: SaveWorkoutStatus.saving));
       try {
-        await repository.addWorkout(currentWorkout);
-        await cacheService.clearCache();
-
-        emit(WorkoutSaved("Workout crée avec succès !"));
+        if (state.isEditingMode == false) {
+          await repository.addWorkout(currentWorkout);
+          await cacheService.clearCachedWorkout();
+        } else {
+          await repository.updateWorkout(currentWorkout);
+        }
+        emit(
+          state.copyWith(
+            saveWorkoutStatus: SaveWorkoutStatus.success,
+            saveWorkoutSuccessString: state.isEditingMode == true
+                ? "Workout modifié avec succès !"
+                : "Workout crée avec succès !",
+            saveWorkoutErrorString: null,
+            currentWorkout: WorkoutEntity.empty(),
+          ),
+        );
       } catch (e) {
-        // le 'e' vient du throw Exception plus bas, de l'API.
-        emit(WorkoutSavedError(e.toString()));
+        emit(
+          state.copyWith(
+            saveWorkoutStatus: SaveWorkoutStatus.failure,
+            saveWorkoutErrorString: e.toString(),
+            saveWorkoutSuccessString: null,
+          ),
+        );
       }
     });
 
     on<UpdateWorkoutDetails>((event, emit) async {
-      final currentWorkout = state.workout ?? WorkoutEntity.empty();
-      final updatedWorkout = currentWorkout.copyWith(
-        title: event.title,
-        note: event.note,
-        date: event.date,
-      );
-      await cacheService.saveCachedWorkout(updatedWorkout);
-      emit(CacheReady(updatedWorkout));
-    });
-
-    on<DeleteWorkout>((event, emit) async {});
-
-    on<DeleteAllWorkouts>((event, emit) async {
+      final currentWorkout = state.currentWorkout;
       try {
-        await repository.deleteAllWorkouts();
-      } catch (e) {}
+        final updatedWorkout = currentWorkout.copyWith(
+          title: event.title,
+          note: event.note,
+          date: event.date,
+        );
+        if (state.isEditingMode == false) {
+          await cacheService.saveCachedWorkout(updatedWorkout);
+        }
+        emit(
+          state.copyWith(
+            cacheStatus: CacheStatus.ready,
+            currentWorkout: updatedWorkout,
+          ),
+        );
+      } catch (e) {
+        emit(
+          state.copyWith(
+            cacheStatus: CacheStatus.ready,
+            cacheErrorString:
+                "Impossible de modifier les détails du workout ${currentWorkout.title}",
+            cacheSuccessString: null,
+            currentWorkout: currentWorkout,
+          ),
+        );
+        print(e);
+      }
     });
 
-    // 1. On vérifie s'il y a un workout présent dans le cache
+    on<DeleteWorkout>((event, emit) async {
+      try {
+        await repository.deleteWorkout(event.workout.id);
+        emit(
+          state.copyWith(
+            deleteWorkoutStatus: DeleteWorkoutStatus.success,
+            deletedWorkout: event.workout,
+            deleteWorkoutSuccessString:
+                "Workout ${event.workout.title} supprimé",
+            deleteWorkoutErrorString: null,
+          ),
+        );
+      } catch (e) {
+        emit(
+          state.copyWith(
+            deleteWorkoutStatus: DeleteWorkoutStatus.failure,
+            deleteWorkoutErrorString: e.toString(),
+            deleteWorkoutSuccessString: null,
+          ),
+        );
+      }
+    });
+
+    // Cette fonction ne sera pas en prod donc pas important à gere correctement (message confirmation, etc.)
+    on<DeleteAllWorkouts>((event, emit) async {
+      await repository.deleteAllWorkouts();
+    });
+
     on<HasCache>((event, emit) async {
-      emit(CacheLoading());
+      emit(state.copyWith(cacheStatus: CacheStatus.loading));
       var cachedWorkout = cacheService.getCachedWorkout();
       try {
-        // Si ya un workout, on l'assigne
-        if (cachedWorkout != null) {
-          emit(CacheFound(cachedWorkout));
-          // Si pas, on initialise un nouveau
-        } else {
-          emit(CacheReady(WorkoutEntity.empty()));
+        // Depuis le calendrier (pas de cache)
+        if (event.initialDate != null) {
+          emit(
+            state.copyWith(
+              cacheStatus: CacheStatus.ready,
+              saveWorkoutStatus: SaveWorkoutStatus
+                  .initial, // on reset l'état du saveWorkout dans le contexte ou on aurait une erreur de save (pas de titre par exemple) et qu'on reviendrait sur la page par la suite (le status serait du coup 'failure' si pas de reset à initial)
+              currentWorkout: WorkoutEntity.empty().copyWith(
+                date: event.initialDate,
+              ),
+              saveWorkoutErrorString: null,
+              saveWorkoutSuccessString: null,
+              isEditingMode: false,
+            ),
+          );
+          return;
         }
+
+        // Cache trouvé
+        if (cachedWorkout != null) {
+          emit(
+            state.copyWith(
+              cacheStatus: CacheStatus.found,
+              saveWorkoutStatus: SaveWorkoutStatus.initial,
+              currentWorkout: cachedWorkout,
+              saveWorkoutErrorString: null,
+              saveWorkoutSuccessString: null,
+              isEditingMode: false,
+            ),
+          );
+          return;
+        }
+
+        // Pas de cache
+        emit(
+          state.copyWith(
+            cacheStatus: CacheStatus.ready,
+            saveWorkoutStatus: SaveWorkoutStatus.initial,
+            currentWorkout: WorkoutEntity.empty(),
+            saveWorkoutErrorString: null,
+            saveWorkoutSuccessString: null,
+            isEditingMode: false,
+          ),
+        );
       } catch (e) {
-        emit(CacheFailure('Erreur cache : $e'));
+        emit(
+          state.copyWith(
+            cacheStatus: CacheStatus.failure,
+            cacheErrorString: 'Erreur cache : $e',
+            cacheSuccessString: null,
+          ),
+        );
       }
     });
 
     on<ResumeCache>((event, emit) async {
-      emit(CacheReady(state.workout ?? WorkoutEntity.empty()));
+      emit(
+        state.copyWith(
+          cacheStatus: CacheStatus.ready,
+          saveWorkoutStatus: SaveWorkoutStatus.initial,
+          currentWorkout: state.currentWorkout,
+          saveWorkoutErrorString: null,
+          saveWorkoutSuccessString: null,
+          isEditingMode: false,
+        ),
+      );
     });
 
     on<NewCache>((event, emit) async {
-      await cacheService.clearCache();
-      emit(CacheReady(WorkoutEntity.empty()));
+      await cacheService.clearCachedWorkout();
+      emit(
+        state.copyWith(
+          cacheStatus: CacheStatus.ready,
+          saveWorkoutStatus: SaveWorkoutStatus.initial,
+          currentWorkout: WorkoutEntity.empty(),
+          saveWorkoutErrorString: null,
+          saveWorkoutSuccessString: null,
+          isEditingMode: false,
+        ),
+      );
     });
 
-    on<AddExerciseToCache>((event, emit) async {
-      //emit(CacheLoading(workout: state.workout));
+    on<AddExercise>((event, emit) async {
+      final currentWorkout = state.currentWorkout;
       try {
-        // 1. Récupérer le workout actuel depuis le state
-        final currentWorkout = state.workout ?? WorkoutEntity.empty();
-
-        // 2. Fetch l'exercice depuis l'API (délégation au repository)
         final exercise = await repository.fetchExerciseById(event.exerciseId);
-
-        // 3. Logique métier : ajouter l'exercice au workout (cette logique est dans le BLoC car c'est du business logic)
-        final workoutExercice = WorkoutExerciceEntity(exercise: exercise);
+        final workoutExercice = WorkoutExerciseEntity(exercise: exercise);
         final updatedWorkout = currentWorkout.copyWith(
           exercices: [...currentWorkout.exercices, workoutExercice],
         );
-
-        // 4. Sauvegarder en cache (délégation au service)
-        await cacheService.saveCachedWorkout(updatedWorkout);
-        emit(CacheReady(updatedWorkout));
+        if (state.isEditingMode == false) {
+          await cacheService.saveCachedWorkout(updatedWorkout);
+        }
+        emit(
+          state.copyWith(
+            cacheStatus: CacheStatus.ready,
+            cacheSuccessString: "Exercice ${exercise.name} ajouté",
+            cacheErrorString: null,
+            currentWorkout: updatedWorkout,
+          ),
+        );
       } catch (e) {
-        // Gestion d'erreur : on garde le workout actuel et on informe l'utilisateur
-        final currentWorkout = state.workout ?? WorkoutEntity.empty();
-        emit(CacheReady(currentWorkout));
-        // TODO: Ajouter un SnackBar ou ErrorState pour notifier l'user
+        emit(
+          state.copyWith(
+            cacheStatus: CacheStatus.failure,
+            cacheErrorString: e.toString(),
+            cacheSuccessString: null,
+            currentWorkout: currentWorkout,
+          ),
+        );
       }
     });
 
     on<UpdateExerciseDetails>((event, emit) async {
-      final currentWorkout = state.workout ?? WorkoutEntity.empty();
+      final currentWorkout = state.currentWorkout;
       final index = event.exIndex;
+      try {
+        final updatedExercises = List<WorkoutExerciseEntity>.from(
+          currentWorkout.exercices,
+        );
 
-      // On récupère la liste d'exercices du workout courant.
-      final updatedExercises = List<WorkoutExerciceEntity>.from(
-        currentWorkout.exercices,
-      );
+        updatedExercises[index] = updatedExercises[index].copyWith(
+          sets: event.sets,
+          reps: event.reps,
+          weight: event.weight,
+        );
 
-      updatedExercises[index] = updatedExercises[index].copyWith(
-        sets: event.sets,
-        reps: event.reps,
-        weight: event.weight,
-      );
-
-      final updatedWorkout = currentWorkout.copyWith(
-        exercices: updatedExercises,
-      );
-      await cacheService.saveCachedWorkout(updatedWorkout);
-      emit(CacheReady(updatedWorkout));
+        final updatedWorkout = currentWorkout.copyWith(
+          exercices: updatedExercises,
+        );
+        if (state.isEditingMode == false) {
+          await cacheService.saveCachedWorkout(updatedWorkout);
+        }
+        emit(
+          state.copyWith(
+            cacheStatus: CacheStatus.ready,
+            currentWorkout: updatedWorkout,
+          ),
+        );
+      } catch (e) {
+        emit(
+          state.copyWith(
+            cacheStatus: CacheStatus.failure,
+            cacheErrorString:
+                "Impossible de modifier les détails de cette exercice : $e",
+            cacheSuccessString: null,
+            currentWorkout: currentWorkout,
+          ),
+        );
+        print(e);
+      }
     });
 
     on<RemoveExercise>((event, emit) async {
+      final currentWorkout = state.currentWorkout;
       try {
-        final currentWorkout = state.workout!;
-
         // Ici on récupère tout les exercices qui n'ont pas un id équivalent à celui que l'on veut supp (facon "pro" de supprimer quoi)
         final updatedExercises = currentWorkout.exercices
             .where((workoutEx) => workoutEx.exercise.id != event.exerciseId)
@@ -170,31 +320,107 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
         final updatedWorkout = currentWorkout.copyWith(
           exercices: updatedExercises,
         );
-        await cacheService.saveCachedWorkout(updatedWorkout);
-        emit(CacheReady(updatedWorkout));
+        if (state.isEditingMode == false) {
+          await cacheService.saveCachedWorkout(updatedWorkout);
+        }
+        emit(
+          state.copyWith(
+            cacheStatus: CacheStatus.ready,
+            currentWorkout: updatedWorkout,
+          ),
+        );
       } catch (e) {
-        // Gestion d'erreur : on garde le workout actuel et on informe l'utilisateur
-        final currentWorkout = state.workout ?? WorkoutEntity.empty();
-        emit(CacheReady(currentWorkout));
-        // TODO: Ajouter un SnackBar ou ErrorState pour notifier l'user
+        emit(
+          state.copyWith(
+            cacheStatus: CacheStatus.failure,
+            cacheErrorString: "Impossible de supprimer cette exercice : $e",
+            cacheSuccessString: null,
+            currentWorkout: currentWorkout,
+          ),
+        );
+        print(e);
       }
     });
 
-    on<FetchExercices>((event, emit) async {
-      final workout = state.workout;
+    on<FetchExercises>((event, emit) async {
       try {
-        emit(FetchExercicesLoading(workout: workout));
+        emit(
+          state.copyWith(fetchExercisesStatus: FetchExercisesStatus.loading),
+        );
         final exercisesFromQuery = await repository.fetchExercisesFromQuery(
           event.query,
         );
-        emit(FetchExercicesSuccess(exercisesFromQuery, workout: workout));
+        emit(
+          state.copyWith(
+            fetchExercisesStatus: FetchExercisesStatus.success,
+            exercises: exercisesFromQuery,
+          ),
+        );
       } catch (e) {
         emit(
-          FetchExercicesFailure(
-            'Récupération des exercices depuis API interne impossible : $e',
+          state.copyWith(
+            fetchExercisesStatus: FetchExercisesStatus.failure,
+            fetchExercisesErrorString: e.toString(),
+            fetchExercisesSuccessString: null,
           ),
         );
       }
+    });
+
+    on<ResetSaveStatus>((event, emit) {
+      emit(
+        state.copyWith(
+          saveWorkoutStatus: SaveWorkoutStatus.initial,
+          saveWorkoutErrorString: null,
+          saveWorkoutSuccessString: null,
+        ),
+      );
+    });
+
+    on<ResetDeleteStatus>((event, emit) {
+      emit(
+        state.copyWith(
+          deleteWorkoutStatus: DeleteWorkoutStatus.initial,
+          deleteWorkoutErrorString: null,
+          deleteWorkoutSuccessString: null,
+        ),
+      );
+    });
+
+    on<ResetExistingWorkoutStatus>((event, emit) {
+      emit(
+        state.copyWith(
+          existingWorkoutsStatus: ExistingWorkoutsStatus.initial,
+          existingWorkoutsSuccessString: null,
+          existingWorkoutsErrorString: null,
+        ),
+      );
+    });
+
+    on<LoadWorkoutForEdit>((event, emit) async {
+      emit(
+        state.copyWith(
+          cacheStatus: CacheStatus.ready,
+          currentWorkout: event.workoutToEdit,
+          saveWorkoutStatus: SaveWorkoutStatus.initial,
+          saveWorkoutErrorString: null,
+          saveWorkoutSuccessString: null,
+          isEditingMode: true,
+        ),
+      );
+    });
+
+    on<ResetToEmptyWorkout>((event, emit) async {
+      emit(
+        state.copyWith(
+          cacheStatus: CacheStatus.ready,
+          currentWorkout: WorkoutEntity.empty(),
+          saveWorkoutStatus: SaveWorkoutStatus.initial,
+          saveWorkoutErrorString: null,
+          saveWorkoutSuccessString: null,
+          isEditingMode: false,
+        ),
+      );
     });
   }
 }

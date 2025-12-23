@@ -1,151 +1,235 @@
-import 'package:workout_app/data/entities/exercice_preview_entity.dart';
-import 'package:workout_app/data/entities/workout_entity.dart';
-
-// 'WorkoutState' est le state de base pour tous les states liés aux workouts.
-// Tous les states portent une référence au workout actuel (nullable)
-// Cela permet au BLoC d'accéder à `state.workout` dans n'importe quel handler, sans avoir à caster ou vérifier le type du state.
-// Voir PDF pour rappel sur classe abstraite et leur lien avec les states
-abstract class WorkoutState {
-  final WorkoutEntity? workout;
-  WorkoutState({this.workout});
-}
-
-/// State initial (aucune opération en cours)
-final class WorkoutInitialState extends WorkoutState {
-  WorkoutInitialState() : super(workout: null);
-}
+import 'package:collection/collection.dart';
+import 'package:equatable/equatable.dart';
+import 'package:workout_app/data/entities/workout/exercise_preview_entity.dart';
+import 'package:workout_app/data/entities/workout/workout_entity.dart';
 
 // ============================================================================
-// STATES POUR LA GESTION DU CACHE (création de workout en cours)
+// ENUMS POUR DIFFÉRENCIER LES ÉTATS
 // ============================================================================
 
-final class CacheLoading extends WorkoutState {
-  CacheLoading({WorkoutEntity? workout}) : super(workout: workout);
+/// État du cache (création/édition de workout en cours)
+enum CacheStatus {
+  initial, // Pas encore chargé
+  loading, // En train de vérifier le cache
+  found, // Cache trouvé
+  ready, // Prêt à éditer/émettre
+  failure, // Erreur lors du chargement du cache
 }
 
-final class CacheFound extends WorkoutState {
-  CacheFound(WorkoutEntity workout) : super(workout: workout);
+// État de la liste des workouts existants
+enum ExistingWorkoutsStatus {
+  initial, // Pas encore chargé
+  loading, // En train de charger depuis l'API
+  success, // Chargé avec succès
+  failure, // Erreur lors du chargement
 }
 
-final class CacheReady extends WorkoutState {
-  CacheReady(WorkoutEntity workout) : super(workout: workout);
+/// État de la suppression d'un workout
+enum DeleteWorkoutStatus {
+  initial, // Aucune suppression en cours
+  loading, // En train de supprimer
+  success, // Supprimé avec succès
+  failure, // Erreur lors de la suppression
 }
 
-final class CacheFailure extends WorkoutState {
-  final String message;
-  CacheFailure(this.message, {WorkoutEntity? workout})
-    : super(workout: workout);
+/// État de la recherche d'exercices
+enum FetchExercisesStatus {
+  initial, // Pas de recherche
+  loading, // En train de chercher
+  success, // Exercices trouvés
+  failure, // Erreur lors de la recherche
 }
+
+/// État de la sauvegarde du workout (validation + envoi API)
+enum SaveWorkoutStatus {
+  initial, // Pas de sauvegarde en cours
+  validating, // En train de valider les données
+  saving, // En train de sauvegarder (appel API)
+  success, // Sauvegardé avec succès
+  failure, // Erreur lors de la sauvegarde
+}
+
+enum UpdateWorkoutStatus { initial, loading, success, failure }
 
 // ============================================================================
-// STATES POUR RÉCUPÉRER LES WORKOUTS EXISTANTS (historique)
+// STATE UNIQUE
 // ============================================================================
 
-final class GetExistingWorkoutsLoading extends WorkoutState {
-  GetExistingWorkoutsLoading({WorkoutEntity? workout})
-    : super(workout: workout);
-}
+class WorkoutState extends Equatable {
+  final CacheStatus cacheStatus;
+  final WorkoutEntity currentWorkout;
+  final String? cacheSuccessString;
+  final String? cacheErrorString;
+  final bool isEditingMode;
 
-final class GetExistingWorkoutsSuccess extends WorkoutState {
-  final List<WorkoutEntity> workouts;
+  final ExistingWorkoutsStatus existingWorkoutsStatus;
+  final List<WorkoutEntity> existingWorkouts;
+  final String? existingWorkoutsSuccessString;
+  final String? existingWorkoutsErrorString;
 
-  GetExistingWorkoutsSuccess(this.workouts, {WorkoutEntity? workout})
-    : super(workout: workout);
-}
+  final DeleteWorkoutStatus deleteWorkoutStatus;
+  final WorkoutEntity? deletedWorkout;
+  final String? deleteWorkoutSuccessString;
+  final String? deleteWorkoutErrorString;
 
-final class GetExistingWorkoutsFailure extends WorkoutState {
-  final String message;
+  final FetchExercisesStatus fetchExercisesStatus;
+  final List<ExercisePreviewEntity> exercises;
+  final String? fetchExercisesSuccessString;
+  final String? fetchExercisesErrorString;
 
-  GetExistingWorkoutsFailure(this.message, {WorkoutEntity? workout})
-    : super(workout: workout);
-}
+  final SaveWorkoutStatus saveWorkoutStatus;
+  final WorkoutEntity? savedWorkout;
+  final String? saveWorkoutErrorString;
+  final String? saveWorkoutSuccessString;
 
-// ============================================================================
-// STATES POUR LA RECHERCHE D'EXERCICES
-// ============================================================================
+  final UpdateWorkoutStatus updateWorkoutStatus;
+  final WorkoutEntity? updatedWorkout;
+  final String? updateWorkoutSuccessString;
+  final String? updateWorkoutErrorString;
 
-final class FetchExercicesLoading extends WorkoutState {
-  FetchExercicesLoading({WorkoutEntity? workout}) : super(workout: workout);
-}
+  const WorkoutState({
+    this.cacheStatus = CacheStatus.initial,
+    this.cacheSuccessString,
+    required this.currentWorkout,
+    this.cacheErrorString,
+    this.isEditingMode = false,
 
-final class FetchExercicesSuccess extends WorkoutState {
-  final List<ExercisePreviewEntity> exercices;
+    this.existingWorkoutsStatus = ExistingWorkoutsStatus.initial,
+    this.existingWorkouts = const [],
+    this.existingWorkoutsSuccessString,
+    this.existingWorkoutsErrorString,
 
-  FetchExercicesSuccess(this.exercices, {WorkoutEntity? workout})
-    : super(workout: workout);
-}
+    this.deleteWorkoutStatus = DeleteWorkoutStatus.initial,
+    this.deletedWorkout,
+    this.deleteWorkoutSuccessString,
+    this.deleteWorkoutErrorString,
 
-final class FetchExercicesFailure extends WorkoutState {
-  final String message;
+    this.fetchExercisesStatus = FetchExercisesStatus.initial,
+    this.exercises = const [],
+    this.fetchExercisesSuccessString,
+    this.fetchExercisesErrorString,
 
-  FetchExercicesFailure(this.message, {WorkoutEntity? workout})
-    : super(workout: workout);
-}
+    this.saveWorkoutStatus = SaveWorkoutStatus.initial,
+    this.savedWorkout,
+    this.saveWorkoutSuccessString,
+    this.saveWorkoutErrorString,
 
-// ============================================================================
-// STATES POUR SAUVEGARDER LE WORKOUT (envoi vers l'API)
-// ============================================================================
+    this.updateWorkoutStatus = UpdateWorkoutStatus.initial,
+    this.updatedWorkout,
+    this.updateWorkoutSuccessString,
+    this.updateWorkoutErrorString,
+  });
 
-final class AddWorkoutLoading extends WorkoutState {
-  AddWorkoutLoading({WorkoutEntity? workout}) : super(workout: workout);
-}
+  WorkoutState copyWith({
+    // Cache
+    CacheStatus? cacheStatus,
+    WorkoutEntity? currentWorkout,
+    String? cacheSuccessString,
+    String? cacheErrorString,
+    bool? isEditingMode,
 
-final class AddWorkoutSuccess extends WorkoutState {
-  AddWorkoutSuccess({WorkoutEntity? workout}) : super(workout: workout);
-}
+    // Liste workouts existants
+    ExistingWorkoutsStatus? existingWorkoutsStatus,
+    List<WorkoutEntity>? existingWorkouts,
+    String? existingWorkoutsSuccessString,
+    String? existingWorkoutsErrorString,
 
-final class AddWorkoutFailure extends WorkoutState {
-  final String message;
+    // Suppression
+    DeleteWorkoutStatus? deleteWorkoutStatus,
+    WorkoutEntity? deletedWorkout,
+    String? deleteWorkoutSuccessString,
+    String? deleteWorkoutErrorString,
 
-  AddWorkoutFailure(this.message, {WorkoutEntity? workout})
-    : super(workout: workout);
-}
+    // Recherche exercices
+    FetchExercisesStatus? fetchExercisesStatus,
+    List<ExercisePreviewEntity>? exercises,
+    String? fetchExercisesSuccessString,
+    String? fetchExercisesErrorString,
 
-// ============================================================================
-// STATES POUR SUPPRIMER UN WORKOUT
-// ============================================================================
+    // Sauvegarde
+    SaveWorkoutStatus? saveWorkoutStatus,
+    WorkoutEntity? updatedWorkout,
+    String? saveWorkoutSuccessString,
+    String? saveWorkoutErrorString,
+  }) {
+    return WorkoutState(
+      // Cache
+      cacheStatus: cacheStatus ?? this.cacheStatus,
+      currentWorkout: currentWorkout ?? this.currentWorkout,
+      cacheSuccessString: cacheSuccessString,
+      cacheErrorString:
+          cacheErrorString, // Pas de ?? pour permettre de reset à null
+      isEditingMode: isEditingMode ?? this.isEditingMode,
 
-final class DeleteWorkoutLoading extends WorkoutState {
-  DeleteWorkoutLoading({WorkoutEntity? workout}) : super(workout: workout);
-}
+      existingWorkoutsStatus:
+          existingWorkoutsStatus ?? this.existingWorkoutsStatus,
+      existingWorkouts: existingWorkouts ?? this.existingWorkouts,
+      existingWorkoutsSuccessString: existingWorkoutsSuccessString,
+      existingWorkoutsErrorString: existingWorkoutsErrorString,
 
-final class DeleteWorkoutSuccess extends WorkoutState {
-  DeleteWorkoutSuccess({WorkoutEntity? workout}) : super(workout: workout);
-}
+      deleteWorkoutStatus: deleteWorkoutStatus ?? this.deleteWorkoutStatus,
+      deletedWorkout: deletedWorkout ?? this.deletedWorkout,
+      deleteWorkoutSuccessString: deleteWorkoutSuccessString,
+      deleteWorkoutErrorString: deleteWorkoutErrorString,
 
-final class DeleteWorkoutFailure extends WorkoutState {
-  final String message;
+      fetchExercisesStatus: fetchExercisesStatus ?? this.fetchExercisesStatus,
+      exercises: exercises ?? this.exercises,
+      fetchExercisesSuccessString: fetchExercisesSuccessString,
+      fetchExercisesErrorString: fetchExercisesErrorString,
 
-  DeleteWorkoutFailure(this.message, {WorkoutEntity? workout})
-    : super(workout: workout);
-}
+      saveWorkoutStatus: saveWorkoutStatus ?? this.saveWorkoutStatus,
+      savedWorkout: savedWorkout ?? this.savedWorkout,
+      saveWorkoutSuccessString: saveWorkoutSuccessString,
+      saveWorkoutErrorString: saveWorkoutErrorString,
+    );
+  }
 
-// ============================================================================
-// STATES POUR VERIRICATION VALIDATION WORKOUT
-// ============================================================================
+  Set<DateTime> get workoutDays {
+    return existingWorkouts.map((w) {
+      return DateTime(w.date.year, w.date.month, w.date.day);
+    }).toSet();
+  }
 
-final class WorkoutValidationError extends WorkoutState {
-  final String message;
-  WorkoutValidationError(this.message, {WorkoutEntity? workout})
-    : super(workout: workout);
-}
+  WorkoutEntity? getWorkoutForDate(DateTime date) {
+    return existingWorkouts.firstWhereOrNull(
+      (w) =>
+          w.date.year == date.year &&
+          w.date.month == date.month &&
+          w.date.day == date.day,
+    );
+  }
 
-// ============================================================================
-// STATES POUR CONFIRMATION WORKOUT
-// ============================================================================
+  @override
+  List<Object?> get props => [
+    // Cache
+    cacheStatus,
+    currentWorkout,
+    cacheSuccessString,
+    cacheErrorString,
+    isEditingMode,
 
-final class SavingWorkout extends WorkoutState {
-  SavingWorkout({WorkoutEntity? workout}) : super(workout: workout);
-}
+    // Liste workouts existants
+    existingWorkoutsStatus,
+    existingWorkouts,
+    existingWorkoutsSuccessString,
+    existingWorkoutsErrorString,
 
-final class WorkoutSaved extends WorkoutState {
-  final String message;
-  WorkoutSaved(this.message, {WorkoutEntity? workout})
-    : super(workout: workout);
-}
+    // Suppression
+    deleteWorkoutStatus,
+    deletedWorkout,
+    deleteWorkoutSuccessString,
+    deleteWorkoutErrorString,
 
-final class WorkoutSavedError extends WorkoutState {
-  final String message;
-  WorkoutSavedError(this.message, {WorkoutEntity? workout})
-    : super(workout: workout);
+    // Recherche exercices
+    fetchExercisesStatus,
+    exercises,
+    fetchExercisesSuccessString,
+    fetchExercisesErrorString,
+
+    // Sauvegarde
+    saveWorkoutStatus,
+    savedWorkout,
+    saveWorkoutSuccessString,
+    saveWorkoutErrorString,
+  ];
 }
