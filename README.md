@@ -45,7 +45,7 @@ A complete Flutter mobile application for workout and nutrition tracking with au
 ```bash
 # Clone the repository
 git clone https://github.com/Namirop/fitness_app.git
-cd fitness_app/backend
+cd backend
 
 # Install dependencies
 go mod download
@@ -120,11 +120,10 @@ lib/
 ## 🗺️ Roadmap
 
 - [x] Core MVP (workout + nutrition tracking)
-- [ ] Progress statistics and charts
-- [ ] Data export (CSV/PDF)
+- [ ] Barcode feature
 - [ ] Dark mode
-- [ ] Social features (share workouts)
-- [ ] Workout templates and programs
+- [ ] Multi-language support (French/English)
+- [ ] Progress statistics and charts
 
 ## 🐛 Known Issues
 
@@ -137,7 +136,7 @@ This project is licensed under the MIT License - see LICENSE file for details.
 
 ## 👤 Author
 
-**Romain Namiropolski**
+**Romain Maes**
 - GitHub: [@Namirop](https://github.com/Namirop)
 - LinkedIn: [TODO]
 - Portfolio: [TODO]
