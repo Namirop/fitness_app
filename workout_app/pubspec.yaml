@@ -1,0 +1,69 @@
+name: workout_app
+description: "Flutter Workout App"
+publish_to: 'none' 
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  font_awesome_flutter: ^10.10.0
+  flutter_bloc: ^9.1.1
+  uuid: ^4.5.1
+  http: ^1.5.0
+  cupertino_icons: ^1.0.8
+  cached_network_image: ^3.4.1
+  intl: ^0.20.2
+  logger: ^2.6.2
+  hive_flutter: ^1.1.0
+  hive_generator: ^2.0.1
+  equatable: ^2.0.7
+  collection: ^1.18.0
+  sleek_circular_slider: ^2.1.0
+  fl_chart: ^1.1.1
+  shimmer: ^3.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: 
+
+  flutter_lints: ^5.0.0
+
+flutter:
+
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+   - assets/images/
+   
+  fonts:
+   - family: Michroma
+     fonts:
+      - asset: assets/fonts/Michroma-Regular.ttf
+
+   - family: ArchivoBlack
+     fonts:
+      - asset: assets/fonts/ArchivoBlack-Regular.ttf
+
+   - family: Quadrat
+     fonts:
+     - asset: assets/fonts/Quadrat Grotesk New W01 Bold.ttf
+   - family: Causten
+     fonts:
+     - asset: assets/fonts/Causten Regular.ttf
+
+   - family: Barlow
+     fonts:
+     - asset: assets/fonts/BarlowCondensed-Light.ttf
+       weight: 300
+     - asset: assets/fonts/BarlowCondensed-Regular.ttf
+       weight: 400
+     - asset: assets/fonts/BarlowCondensed-SemiBold.ttf
+       weight: 600
+
+
