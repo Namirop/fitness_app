@@ -17,7 +17,7 @@ func main() {
 
 	r := gin.Default()
 
-	// Middleware de log (même si la route n’existe pas)
+	// Log middleware (even if the route does not exist)
 	r.Use(func(c *gin.Context) {
 		fmt.Println("Request received:", c.Request.Method, c.Request.URL.Path)
 		c.Next()

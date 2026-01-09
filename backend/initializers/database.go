@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB // var globale accessible dans tout le projet
+var DB *gorm.DB // global variable accessible throughout the project
 
 func ConnectToDb() {
 	var err error

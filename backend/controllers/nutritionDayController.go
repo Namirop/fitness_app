@@ -18,7 +18,6 @@ import (
 func GetNutritionDayByDate(c *gin.Context) {
 	nutritionDayStringDate := c.Param("date")
 
-	// Parse la date recu dans le format 'yyyy-MM-dd' (dejà fais coté client mais survérification + pour sql)
 	parsedDate, parseErr := time.Parse("2006-01-02", nutritionDayStringDate)
 	if parseErr != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Format de date invalide"})
@@ -27,7 +26,7 @@ func GetNutritionDayByDate(c *gin.Context) {
 
 	var nutritionDay models.NutritionDay
 	err := initializers.DB.
-		Preload("Meals.FoodPortions.Food"). // 'Preload' assure que les tables liés à ce NutritionDay sont chargés automatiquement
+		Preload("Meals.FoodPortions.Food").
 		Where("DATE(date) = DATE(?)", parsedDate).
 		First(&nutritionDay).Error
 
@@ -76,8 +75,8 @@ func GetFoodsFromQuery(c *gin.Context) {
 
 	encodedQuery := url.QueryEscape(query)
 
-	// "search_simple=1" est indispensable car permet une recherche fiable. Sans ca, recherche plus flou, moins cohérente, etc.
-	// "json=1" = indique à OFF de renvoyer du JSON (car peut renvoyer aussi du HTML, XML ou jQuery)
+	/// “search_simple=1” is essential because it enables reliable searching. Without it, searching is more vague, less consistent, etc.
+	// “json=1” = tells OFF to return JSON (because it can also return HTML, XML, or jQuery)
 	apiUrl := fmt.Sprintf("https://world.openfoodfacts.org/cgi/search.pl?search_terms=%s&search_simple=1&page_size=20&json=1&fields=product_name,id,nutriments,product_quantity_unit,stores", encodedQuery)
 
 	res, err := http.Get(apiUrl)
@@ -141,11 +140,9 @@ func UpdateNutritionDay(c *gin.Context) {
 		return
 	}
 
-	// ✅ 1. Supprime TOUS les meals et leurs portions associés
 	initializers.DB.Exec("DELETE FROM food_portions WHERE meal_id IN (SELECT id FROM meals WHERE nutrition_day_id = ?)", id)
 	initializers.DB.Exec("DELETE FROM meals WHERE nutrition_day_id = ?", id)
 
-	// Génère IDs manquants
 	for i := range existingNutritionDay.Meals {
 		if existingNutritionDay.Meals[i].ID == "" {
 			existingNutritionDay.Meals[i].ID = uuid.New().String()
@@ -157,13 +154,11 @@ func UpdateNutritionDay(c *gin.Context) {
 		}
 	}
 
-	// ✅ 3. Sauvegarde (va recréer tous les meals et portions)
 	if err := initializers.DB.Save(&existingNutritionDay).Error; err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Recharge
 	var updatedNutritionDay models.NutritionDay
 	initializers.DB.
 		Preload("Meals").

@@ -8,14 +8,14 @@ import (
 type FlexibleFloat float64
 
 func (f *FlexibleFloat) UnmarshalJSON(data []byte) error {
-	// Essaie de parser comme float, exemple, gère "proteins": 12.3
+	// Try to parse as float, example, handles “proteins”: 12.3.
 	var num float64
 	if err := json.Unmarshal(data, &num); err == nil {
 		*f = FlexibleFloat(num)
 		return nil
 	}
 
-	// Essaie de parser comme string, exemple, gère "proteins": "12.3"
+	// Try to parse as a string, for example, handle “proteins”: “12.3”
 	var str string
 	if err := json.Unmarshal(data, &str); err == nil {
 		if str == "" {
@@ -31,9 +31,9 @@ func (f *FlexibleFloat) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	// Gère un string vide ("proteins": "")
+	// Handles an empty string (“proteins”: “”)
 	*f = 0
 	return nil
 
-	// On ne gère pas de int car en json, "proteins": 12 est deja un float64 pour Go.
+	// We don't handle int because in JSON, “proteins”: 12 is already a float64 for Go.
 }

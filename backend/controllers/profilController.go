@@ -56,9 +56,6 @@ func CreateProfil(c *gin.Context) {
 }
 
 func UpdateProfil(c *gin.Context) {
-	// ========================================
-	// 1. RÉCUPÉRATION DE L'ID (depuis URL)
-	// ========================================
 	profilID := c.Param("id")
 
 	if profilID == "" {
@@ -67,9 +64,6 @@ func UpdateProfil(c *gin.Context) {
 		return
 	}
 
-	// ========================================
-	// 2. PARSING DU BODY JSON
-	// ========================================
 	var profil models.Profil
 	if err := c.ShouldBindJSON(&profil); err != nil {
 		log.Println("JSON invalide", err)
@@ -78,9 +72,6 @@ func UpdateProfil(c *gin.Context) {
 		return
 	}
 
-	// ========================================
-	// 3. VALIDATIONS MÉTIER
-	// ========================================
 	if strings.TrimSpace(profil.Name) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Le nom est obligatoire",
@@ -152,9 +143,6 @@ func UpdateProfil(c *gin.Context) {
 		return
 	}
 
-	// ========================================
-	// 4. VÉRIFICATION D'EXISTENCE
-	// ========================================
 	var existing models.Profil
 	if err := initializers.DB.First(&existing, "id = ?", profilID).Error; err != nil {
 		log.Println("Profil introuvable", err)
@@ -171,16 +159,8 @@ func UpdateProfil(c *gin.Context) {
 		return
 	}
 
-	// ========================================
-	// 5. FORCE L'ID (SÉCURITÉ)
-	// ========================================
-	// Empêche un client de modifier l'ID d'un autre profil
-	// => Ne JAMAIS faire confiance à l'ID du body
 	profil.ID = profilID
 
-	// ========================================
-	// 6. UPDATE EN BASE DE DONNÉES
-	// ========================================
 	if err := initializers.DB.Model(&existing).Updates(&profil).Error; err != nil {
 		log.Println("Erreur lors de la mise à jour du profil : ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -189,10 +169,6 @@ func UpdateProfil(c *gin.Context) {
 		return
 	}
 
-	// ========================================
-	// 7. RECHARGE LE PROFIL COMPLET
-	// ========================================
-	// Pour retourner les données à jour (avec timestamps, etc.)
 	var updatedProfil models.Profil
 	if err := initializers.DB.First(&updatedProfil, "id = ?", profilID).Error; err != nil {
 		log.Println("Erreur lors de la récupération du profil après modification:", err)
@@ -202,16 +178,13 @@ func UpdateProfil(c *gin.Context) {
 		return
 	}
 
-	// ========================================
-	// 8. RETOUR SUCCÈS
-	// ========================================
 	c.JSON(http.StatusOK, gin.H{
 		"message":       "Profil modifié avec succès",
 		"updatedProfil": updatedProfil,
 	})
 }
 
-// Helper pour validation enum
+// Helper for enum validation
 func contains(slice []string, item string) bool {
 	for _, s := range slice {
 		if s == item {
