@@ -1,4 +1,5 @@
-package models
+// DB structs (GORM)
+package entities
 
 import "time"
 
@@ -19,6 +20,7 @@ type Meal struct {
 	NutritionDayID string        `gorm:"type:uuid;not null;index" json:"-"`
 	Type           string        `gorm:"type:varchar(50);not null" json:"type"`
 	CustomName     *string       `gorm:"type:varchar(100)" json:"customName,omitempty"`
+	Position       int           `gorm:"default:0" json:"-"`
 	TotalCalories  float64       `gorm:"default:0;check:total_calories >= 0" json:"totalCalories"`
 	TotalCarbs     float64       `gorm:"default:0;check:total_carbs >= 0" json:"totalCarbs"`
 	TotalProteins  float64       `gorm:"default:0;check:total_proteins >= 0" json:"totalProteins"`

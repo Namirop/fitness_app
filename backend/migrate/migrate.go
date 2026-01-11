@@ -2,7 +2,7 @@ package main
 
 import (
 	"go_api/initializers"
-	"go_api/models"
+	entities "go_api/models/entities"
 	"log"
 )
 
@@ -15,13 +15,13 @@ func main() {
 	log.Println("🔄 Début de la migration...")
 
 	if err := initializers.DB.Migrator().DropTable(
-		&models.WorkoutExercise{},
-		&models.Workout{},
-		&models.Exercise{},
-		&models.FoodPortion{},
-		&models.Food{},
-		&models.Meal{},
-		&models.NutritionDay{},
+		&entities.WorkoutExercise{},
+		&entities.Workout{},
+		&entities.Exercise{},
+		&entities.FoodPortion{},
+		&entities.Food{},
+		&entities.Meal{},
+		&entities.NutritionDay{},
 		//&models.Profil{},
 	); err != nil {
 		log.Fatal("❌ Erreur lors de la suppression des tables:", err)
@@ -29,16 +29,16 @@ func main() {
 	log.Println("✅ Tables supprimées")
 
 	if err := initializers.DB.AutoMigrate(
-		&models.Exercise{},
-		&models.Workout{},
-		&models.WorkoutExercise{},
+		&entities.Exercise{},
+		&entities.Workout{},
+		&entities.WorkoutExercise{},
 
-		&models.NutritionDay{},
-		&models.Meal{},
-		&models.Food{},
-		&models.FoodPortion{},
+		&entities.NutritionDay{},
+		&entities.Meal{},
+		&entities.Food{},
+		&entities.FoodPortion{},
 
-		&models.Profil{},
+		&entities.Profil{},
 	); err != nil {
 		log.Fatal("❌ Erreur lors de la création des tables:", err)
 	}

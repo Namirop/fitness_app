@@ -1,4 +1,5 @@
-package models
+// external API responses
+package external
 
 type ExternalExerciseResponse struct {
 	Exercises []Suggestions `json:"suggestions"`
@@ -39,11 +40,16 @@ type ExternalVideoDetails struct {
 
 // -------------
 
-type ExternalSearchFoodResponse struct {
-	Food []ExternalSearchFood `json:"products"`
+type ExternalSearchFoodsResponse struct {
+	Food []ExternalFood `json:"products"`
 }
 
-type ExternalSearchFood struct {
+type ExternalSearchFoodIdResponse struct {
+	Status int          `json:"status"`
+	Food   ExternalFood `json:"product"`
+}
+
+type ExternalFood struct {
 	FoodName      string                      `json:"product_name"`
 	FoodID        string                      `json:"id"`
 	ReferenceUnit string                      `json:"product_quantity_unit"`

@@ -1,4 +1,4 @@
-package models
+package external
 
 import (
 	"encoding/json"
@@ -35,5 +35,5 @@ func (f *FlexibleFloat) UnmarshalJSON(data []byte) error {
 	*f = 0
 	return nil
 
-	// We don't handle int because in JSON, “proteins”: 12 is already a float64 for Go.
+	// We do not handle int because in JSON, “proteins”: 12 is already a float64 for Go.
 }
