@@ -82,7 +82,7 @@ class _ExerciseSearchScreenState extends State<ExerciseSearchScreen> {
                                       ),
                                     ],
                                     decoration: InputDecoration(
-                                      hintText: 'Rechercher un exercice',
+                                      hintText: 'Rechercher',
                                       border: InputBorder.none,
                                       isDense: true,
                                     ),

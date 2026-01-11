@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:workout_app/blocs/NutritionBloc/nutrition_event.dart';
 import 'package:workout_app/blocs/NutritionBloc/nutrition_state.dart';
-import 'package:workout_app/data/entities/nutrition/meal_entity.dart';
+import 'package:workout_app/data/dto/add_food_portion_dto.dart';
 import 'package:workout_app/data/entities/nutrition/nutrition_day_entity.dart';
 import 'package:workout_app/data/repositories/nutrition_repository.dart';
 
@@ -111,66 +111,27 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
       );
       try {
         final currentNutritionDay = state.currentNutritionDay;
+        final nutritionDayId = currentNutritionDay.id;
 
         final indexMeal = currentNutritionDay.meals.indexWhere(
           (meal) => meal.type == event.mealType,
         );
 
         final currentMeal = currentNutritionDay.meals[indexMeal];
+        final mealId = currentMeal.id;
 
-        final updatedFoodPortionsList = [
-          ...currentMeal.foodPortions,
-          event.foodPortion,
-        ];
-
-        final updatedMeal = currentMeal.copyWith(
-          foodsPortions: updatedFoodPortionsList,
-          totalCalories: updatedFoodPortionsList.fold(
-            0.0,
-            (sum, fp) => sum! + fp.totalCalories,
-          ), // fais l'addition des calories de toutes les portions
-          totalCarbs: updatedFoodPortionsList.fold(
-            0.0,
-            (sum, fp) => sum! + fp.totalCarbs,
-          ),
-          totalProteins: updatedFoodPortionsList.fold(
-            0.0,
-            (sum, fp) => sum! + fp.totalProteins,
-          ),
-          totalFats: updatedFoodPortionsList.fold(
-            0.0,
-            (sum, fp) => sum! + fp.totalFats,
-          ),
+        final dto = AddFoodPortionDto(
+          nutritionDayId: nutritionDayId,
+          mealId: mealId,
+          foodId: event.foodId,
+          quantity: event.quantity,
         );
 
-        final updatedMealsList = List<MealEntity>.from(
-          currentNutritionDay.meals,
-        );
-        updatedMealsList[indexMeal] = updatedMeal;
+        final updatedNutritionDay = await repository.addFoodPortion(dto);
 
-        final updatedNutritionDay = currentNutritionDay.copyWith(
-          meals: updatedMealsList,
-          totalCalories: updatedMealsList.fold(
-            0.0,
-            (sum, m) => sum! + m.totalCalories,
-          ),
-          totalCarbs: updatedMealsList.fold(
-            0.0,
-            (sum, m) => sum! + m.totalCarbs,
-          ),
-          totalProteins: updatedMealsList.fold(
-            0.0,
-            (sum, m) => sum! + m.totalProteins,
-          ),
-          totalFats: updatedMealsList.fold(0.0, (sum, m) => sum! + m.totalFats),
-        );
-
-        final receivedNutritionDay = await repository.updateNutritionDay(
-          updatedNutritionDay,
-        );
         emit(
           state.copyWith(
-            currentNutritionDay: receivedNutritionDay,
+            currentNutritionDay: updatedNutritionDay,
             addFoodPortionStatus: AddFoodPortionStatus.success,
             addFoodPortionSuccessString: "Aliment ajouté",
             addFoodPortionErrorString: null,
@@ -197,35 +158,9 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
         ),
       );
       try {
-        final foodPortion = event.foodPortion;
-        final mealType = event.mealType;
-        final currentNutritionDay = state.currentNutritionDay;
-
-        final indexMeal = currentNutritionDay.meals.indexWhere(
-          (meal) => meal.type == mealType,
+        final updatedNutritionDay = await repository.deleteFoodPortion(
+          event.foodPortionId,
         );
-
-        final currentMeal = currentNutritionDay.meals[indexMeal];
-
-        final updatedFoodPortions = currentMeal.foodPortions
-            .where((fp) => fp.id != foodPortion.id)
-            .toList();
-
-        final updatedCurrentMeal = currentMeal.copyWith(
-          foodsPortions: updatedFoodPortions,
-        );
-
-        final updatedMealsList = List<MealEntity>.from(
-          currentNutritionDay.meals,
-        );
-
-        updatedMealsList[indexMeal] = updatedCurrentMeal;
-
-        final updatedNutritionDay = currentNutritionDay.copyWith(
-          meals: updatedMealsList,
-        );
-
-        await repository.updateNutritionDay(updatedNutritionDay);
         emit(
           state.copyWith(
             currentNutritionDay: updatedNutritionDay,

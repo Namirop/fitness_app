@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:workout_app/blocs/NutritionBloc/nutrition_bloc.dart';
 import 'package:workout_app/blocs/NutritionBloc/nutrition_event.dart';
 import 'package:workout_app/blocs/NutritionBloc/nutrition_state.dart';
@@ -54,6 +55,21 @@ class _MainScreenState extends State<MainScreen> {
                           previous.currentNutritionDay.totalCalories !=
                           current.currentNutritionDay.totalCalories,
                       builder: (context, state) {
+                        if (state.selectedNutritionDateStatus ==
+                            SelectedNutritionDateStatus.loading) {
+                          return Shimmer.fromColors(
+                            baseColor: Colors.grey.shade300,
+                            highlightColor: Colors.grey.shade100,
+                            child: Container(
+                              width: 60,
+                              height: 25,
+                              decoration: BoxDecoration(
+                                color: Colors.grey,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          );
+                        }
                         return Text(
                           '🔥 ${state.currentNutritionDay.formattedTotalCalories} KCAL',
                           style: TextStyle(
@@ -75,13 +91,25 @@ class _MainScreenState extends State<MainScreen> {
                 const SizedBox(height: 15),
                 BlocConsumer<ProfilBloc, ProfilState>(
                   buildWhen: (current, previous) =>
-                      previous.currentProfil != current.currentProfil,
+                      previous.currentProfil != current.currentProfil ||
+                      previous.loadProfilStatus != current.loadProfilStatus,
                   listener: (context, state) async {
                     await _handleProfilStateChanges(state);
                   },
                   builder: (context, state) {
                     if (state.loadProfilStatus == LoadProfilStatus.loading) {
-                      // handle this
+                      return Shimmer.fromColors(
+                        baseColor: Colors.grey.shade300,
+                        highlightColor: Colors.grey.shade100,
+                        child: Container(
+                          width: 60,
+                          height: 25,
+                          decoration: BoxDecoration(
+                            color: Colors.grey,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      );
                     }
                     return Text(
                       "Bonjour, ${state.currentProfil.displayName}",

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
-import 'package:workout_app/data/entities/nutrition/nutrition_day_entity.dart';
+import 'package:workout_app/data/dto/add_food_portion_dto.dart';
 import 'package:workout_app/data/models/nutrition/food_model.dart';
 import 'package:workout_app/data/models/nutrition/nutrition_day_model.dart';
 
@@ -56,18 +56,44 @@ class NutritionRepository {
     }
   }
 
-  Future<NutritionDayModel> updateNutritionDay(
-    NutritionDayEntity nutritionDay,
+  Future<NutritionDayModel> addFoodPortion(
+    AddFoodPortionDto addFoodPortionDto,
   ) async {
     try {
-      final url = Uri.parse("$baseUrl/nutritionDay/${nutritionDay.id}");
-      final jsonBody = NutritionDayModel.fromEntity(nutritionDay).toJson();
+      final url = Uri.parse(
+        "$baseUrl/meals/${addFoodPortionDto.mealId}/food-portions",
+      );
+      final jsonBody = addFoodPortionDto.toJson();
       final response = await http
-          .put(
+          .post(
             url,
             headers: {"Content-Type": "application/json"},
             body: jsonEncode(jsonBody),
           )
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return NutritionDayModel.fromJson(data['nutritionDay']);
+      } else if (response.statusCode >= 500) {
+        throw Exception("Le serveur est indisponible");
+      } else {
+        throw Exception("Erreur : ${response.statusCode}");
+      }
+    } on TimeoutException {
+      throw Exception('Le serveur met trop de temps à répondre');
+    } on SocketException {
+      throw Exception("Pas de connexion internet");
+    } catch (e) {
+      throw Exception("Erreur inattendue : $e");
+    }
+  }
+
+  Future<NutritionDayModel> deleteFoodPortion(String foodPortionId) async {
+    try {
+      final url = Uri.parse("$baseUrl/food-portions/$foodPortionId");
+      final response = await http
+          .delete(url)
           .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {

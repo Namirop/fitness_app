@@ -50,7 +50,7 @@ class FoodEntity {
   }
 
   String get primaryStore {
-    if (store.isEmpty) return '/';
+    if (store.isEmpty) return 'N/A';
     return store.split(',').first;
   }
 

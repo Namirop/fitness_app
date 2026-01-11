@@ -85,9 +85,9 @@ class WorkoutRepository {
     }
   }
 
-  Future<List<WorkoutModel>> deleteWorkout(String id) async {
+  Future<List<WorkoutModel>> deleteWorkout(String workoutId) async {
     try {
-      final url = Uri.parse("$baseUrl/workout/$id");
+      final url = Uri.parse("$baseUrl/workout/$workoutId");
       final response = await http
           .delete(url)
           .timeout(const Duration(seconds: 10));
