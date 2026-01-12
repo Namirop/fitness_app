@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:workout_app/core/errors/api_exception.dart';
 import 'package:workout_app/data/entities/profil/profil_entity.dart';
 import 'package:http/http.dart' as http;
 import 'package:workout_app/data/models/profil/profil_model.dart';
@@ -18,13 +19,11 @@ class ProfilRepository {
         final data = jsonDecode(response.body);
         final profilJson = data['profil'];
         return ProfilModel.fromJson(profilJson);
-      } else {
-        throw Exception('Erreur serveur : - ${response.statusCode} ');
       }
+      handleHttpError(response);
+      throw StateError('Unreachable');
     } on TimeoutException {
-      throw Exception('Le serveur met trop de temps à répondre');
-    } catch (e) {
-      throw Exception("Erreur lors de la récupération du profil : $e");
+      throw ApiException('Le serveur met trop de temps à répondre');
     }
   }
 
@@ -39,13 +38,11 @@ class ProfilRepository {
         final data = jsonDecode(response.body);
         final profilJson = data['profil'];
         return ProfilModel.fromJson(profilJson);
-      } else {
-        throw Exception('Erreur serveur : ${response.statusCode}');
       }
+      handleHttpError(response);
+      throw StateError('Unreachable');
     } on TimeoutException {
-      throw Exception('Le serveur met trop de temps à répondre');
-    } catch (e) {
-      throw Exception("Erreur lors de la création du profil : $e");
+      throw ApiException('Le serveur met trop de temps à répondre');
     }
   }
 
@@ -65,14 +62,25 @@ class ProfilRepository {
       if (response.statusCode == 200) {
         final updatedProfilJson = data['updatedProfil'];
         return ProfilModel.fromJson(updatedProfilJson);
-      } else {
-        final errorMessage = data['error'] ?? 'Erreur inconnue';
-        throw Exception(errorMessage);
       }
+      handleHttpError(response);
+      throw StateError('Unreachable');
     } on TimeoutException {
-      throw Exception('Le serveur met trop de temps à répondre');
-    } catch (e) {
-      throw Exception("Erreur lors de la modification du profil : $e");
+      throw ApiException('Le serveur met trop de temps à répondre');
     }
+  }
+
+  void handleHttpError(http.Response response) {
+    try {
+      final body = jsonDecode(response.body);
+      if (body is Map && body['error'] != null) {
+        throw ApiException(body['error'], statusCode: response.statusCode);
+      }
+    } catch (_) {}
+
+    throw ApiException(
+      'Erreur serveur (${response.statusCode})',
+      statusCode: response.statusCode,
+    );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:workout_app/blocs/NutritionBloc/nutrition_event.dart';
 import 'package:workout_app/blocs/NutritionBloc/nutrition_state.dart';
+import 'package:workout_app/core/errors/api_exception.dart';
 import 'package:workout_app/data/dto/add_food_portion_dto.dart';
 import 'package:workout_app/data/entities/nutrition/nutrition_day_entity.dart';
 import 'package:workout_app/data/repositories/nutrition_repository.dart';
@@ -27,11 +28,11 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
             currentNutritionDay: nutritionDay,
           ),
         );
-      } catch (e) {
+      } on ApiException catch (e) {
         emit(
           state.copyWith(
             selectedNutritionDateStatus: SelectedNutritionDateStatus.failure,
-            selectedDateErrorString: "Chargement de la journée impossible",
+            selectedDateErrorString: e.toString(),
           ),
         );
       }
@@ -56,11 +57,11 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
             currentNutritionDay: nutritionDay,
           ),
         );
-      } catch (e) {
+      } on ApiException catch (e) {
         emit(
           state.copyWith(
             selectedNutritionDateStatus: SelectedNutritionDateStatus.failure,
-            selectedDateErrorString: "Impossible de séléctionné le jour choisi",
+            selectedDateErrorString: e.toString(),
           ),
         );
       }
@@ -82,11 +83,11 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
             foodList: foods,
           ),
         );
-      } catch (e) {
+      } on ApiException catch (e) {
         emit(
           state.copyWith(
             getFoodListStatus: GetFoodListStatus.failure,
-            getFoodListErrorString: "Recherche impossible",
+            getFoodListErrorString: e.toString(),
           ),
         );
       }
@@ -138,11 +139,11 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
             foodList: List.empty(),
           ),
         );
-      } catch (e) {
+      } on ApiException catch (e) {
         emit(
           state.copyWith(
             addFoodPortionStatus: AddFoodPortionStatus.failure,
-            addFoodPortionErrorString: "Ajout de la portion impossible",
+            addFoodPortionErrorString: e.toString(),
             addFoodPortionSuccessString: null,
           ),
         );
@@ -169,12 +170,11 @@ class NutritionBloc extends Bloc<NutritionEvent, NutritionState> {
             deleteFoodPortionErrorString: null,
           ),
         );
-      } catch (e) {
+      } on ApiException catch (e) {
         emit(
           state.copyWith(
             deleteFoodPortionStatus: DeleteFoodPortionStatus.failure,
-            selectedDateErrorString:
-                "Erreur lors de la suppression de l'aliment",
+            deleteFoodPortionErrorString: e.toString(),
             deleteFoodPortionSuccessString: null,
           ),
         );

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:workout_app/core/errors/api_exception.dart';
 import 'package:workout_app/data/entities/workout/workout_entity.dart';
 import 'package:workout_app/data/models/workout/exercise_model.dart';
 import 'package:workout_app/data/models/workout/workout_model.dart';
@@ -13,19 +14,16 @@ class WorkoutRepository {
       final response = await http.get(url).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final List workoutsJson = data['existingWorkouts'];
+        final List workoutsJson = data['workouts'];
         return workoutsJson
             .map((workout) => WorkoutModel.fromJson(workout))
             .toList();
-      } else {
-        throw Exception('Erreur serveur : ${response.statusCode}');
       }
+      handleHttpError(response);
+      // otherwise Dart is not happy
+      throw StateError('Unreachable');
     } on TimeoutException {
-      throw Exception('Le serveur met trop de temps à répondre');
-    } catch (e) {
-      throw Exception(
-        "Erreur lors de la récupération de tous les workouts : $e",
-      );
+      throw ApiException('Le serveur met trop de temps à répondre');
     }
   }
 
@@ -43,17 +41,13 @@ class WorkoutRepository {
 
       if (response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        final createdWorkoutJson = data['createdWorkout'];
+        final createdWorkoutJson = data['workout'];
         return WorkoutModel.fromJson(createdWorkoutJson);
-      } else {
-        throw Exception('Erreur serveur : ${response.statusCode}');
       }
+      handleHttpError(response);
+      throw UnimplementedError();
     } on TimeoutException {
-      throw Exception('Le serveur met trop de temps à répondre');
-    } catch (e) {
-      throw Exception(
-        "Erreur lors de la création du workout ${workout.title} : $e",
-      );
+      throw ApiException('Le serveur met trop de temps à répondre');
     }
   }
 
@@ -71,17 +65,13 @@ class WorkoutRepository {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final updatedWorkoutJson = data['updatedWorkout'];
+        final updatedWorkoutJson = data['workout'];
         return WorkoutModel.fromJson(updatedWorkoutJson);
-      } else {
-        throw Exception('Erreur serveur : ${response.statusCode}');
       }
+      handleHttpError(response);
+      throw StateError('Unreachable');
     } on TimeoutException {
-      throw Exception('Le serveur met trop de temps à répondre');
-    } catch (e) {
-      throw Exception(
-        "Erreur lors de la modification du workout ${workout.title} : $e",
-      );
+      throw ApiException('Le serveur met trop de temps à répondre');
     }
   }
 
@@ -95,16 +85,15 @@ class WorkoutRepository {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        final List updatedWorkoutsJson = data['updatedWorkouts'];
+        final List updatedWorkoutsJson = data['workouts'];
         return updatedWorkoutsJson
             .map((workout) => WorkoutModel.fromJson(workout))
             .toList();
       }
-      throw Exception('Erreur serveur : ${response.statusCode}');
+      handleHttpError(response);
+      throw StateError('Unreachable');
     } on TimeoutException {
-      throw Exception('Le serveur met trop de temps à répondre');
-    } catch (e) {
-      throw Exception("Impossible de supprimer le workout : $e");
+      throw ApiException('Le serveur met trop de temps à répondre');
     }
   }
 
@@ -118,13 +107,25 @@ class WorkoutRepository {
 
         final List exercisesJson = data['exercises'];
         return exercisesJson.map((ex) => ExerciseModel.fromJson(ex)).toList();
-      } else {
-        throw Exception('Erreur serveur : ${response.statusCode}');
       }
+      handleHttpError(response);
+      throw StateError('Unreachable');
     } on TimeoutException {
-      throw Exception('Le serveur met trop de temps à répondre');
-    } catch (e) {
-      throw Exception('Erreur lors du fetch des exercices : $e');
+      throw ApiException('Le serveur met trop de temps à répondre');
     }
+  }
+
+  void handleHttpError(http.Response response) {
+    try {
+      final body = jsonDecode(response.body);
+      if (body is Map && body['error'] != null) {
+        throw ApiException(body['error'], statusCode: response.statusCode);
+      }
+    } catch (_) {}
+
+    throw ApiException(
+      'Erreur serveur (${response.statusCode})',
+      statusCode: response.statusCode,
+    );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:workout_app/blocs/ProfilBloc/profil_event.dart';
 import 'package:workout_app/blocs/ProfilBloc/profil_state.dart';
+import 'package:workout_app/core/errors/api_exception.dart';
 import 'package:workout_app/data/entities/profil/profil_entity.dart';
 import 'package:workout_app/data/repositories/profil_repository.dart';
 import 'package:workout_app/data/services/profil_cache_service.dart';
@@ -39,10 +40,10 @@ class ProfilBloc extends Bloc<ProfilEvent, ProfilState> {
             loadProfilStatus: LoadProfilStatus.success,
           ),
         );
-      } catch (e) {
+      } on ApiException catch (e) {
         emit(
           state.copyWith(
-            profilErrorString: "Erreur affichage nom",
+            profilErrorString: e.toString(),
             loadProfilStatus: LoadProfilStatus.failure,
             currentProfil: ProfilEntity.empty(),
           ),
@@ -76,11 +77,11 @@ class ProfilBloc extends Bloc<ProfilEvent, ProfilState> {
             currentProfil: receivedProfil,
           ),
         );
-      } catch (e) {
+      } on ApiException catch (e) {
         emit(
           state.copyWith(
             editProfilStatus: EditProfilStatus.failure,
-            profilErrorString: "Erreur modification profil",
+            profilErrorString: e.toString(),
           ),
         );
       }

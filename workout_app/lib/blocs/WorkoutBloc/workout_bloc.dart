@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:workout_app/blocs/WorkoutBloc/workout_event.dart';
 import 'package:workout_app/blocs/WorkoutBloc/workout_state.dart';
+import 'package:workout_app/core/errors/api_exception.dart';
 import 'package:workout_app/data/entities/workout/workout_entity.dart';
 import 'package:workout_app/data/entities/workout/workout_exercise_entity.dart';
 import 'package:workout_app/data/repositories/workout_repository.dart';
@@ -34,11 +35,11 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
             existingWorkouts: existingWorkout,
           ),
         );
-      } catch (e) {
+      } on ApiException catch (e) {
         emit(
           state.copyWith(
             existingWorkoutsStatus: ExistingWorkoutsStatus.failure,
-            existingWorkoutsErrorString: "Impossible de récupérer les workouts",
+            existingWorkoutsErrorString: e.toString(),
           ),
         );
       }
@@ -100,13 +101,11 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
             isEditingMode: false,
           ),
         );
-      } catch (e) {
+      } on ApiException catch (e) {
         emit(
           state.copyWith(
             submitWorkoutStatus: SubmitWorkoutStatus.failure,
-            saveWorkoutErrorString: state.isEditingMode
-                ? "Modification impossible"
-                : "Création impossible",
+            saveWorkoutErrorString: e.toString(),
             saveWorkoutSuccessString: null,
           ),
         );
@@ -171,11 +170,11 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
             isEditingMode: false,
           ),
         );
-      } catch (e) {
+      } on ApiException catch (e) {
         emit(
           state.copyWith(
             deleteWorkoutStatus: DeleteWorkoutStatus.failure,
-            deleteWorkoutErrorString: "Suppression impossible",
+            deleteWorkoutErrorString: e.toString(),
             deleteWorkoutSuccessString: null,
           ),
         );
@@ -277,11 +276,11 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
             exercisesList: exercises,
           ),
         );
-      } catch (e) {
+      } on ApiException catch (e) {
         emit(
           state.copyWith(
             searchExercisesStatus: SearchExercisesStatus.failure,
-            fetchExercisesErrorString: "Recherche impossible",
+            fetchExercisesErrorString: e.toString(),
           ),
         );
       }
