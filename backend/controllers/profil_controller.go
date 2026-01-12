@@ -13,9 +13,10 @@ import (
 )
 
 func GetProfil(c *gin.Context) {
+	userID := c.GetUint("userId")
 
 	var profil entities.Profil
-	if err := initializers.DB.First(&profil).Error; err != nil {
+	if err := initializers.DB.Where("user_id = ?", userID).First(&profil).Error; err != nil {
 		log.Printf("Erreur récupération profil: %v", err)
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Profil introuvable"})
@@ -32,23 +33,34 @@ func GetProfil(c *gin.Context) {
 }
 
 func CreateProfil(c *gin.Context) {
-	profil := entities.Profil{
-		Name:           "Utilisateur",
-		Gender:         "Homme",
-		Age:            25,
-		Weight:         70,
-		Height:         175,
-		CaloriesTarget: 2000,
-		CarbsTarget:    250,
-		ProteinsTarget: 150,
-		FatsTarget:     67,
-		ActivityLevel:  "",
-		Goal:           "",
-	}
+	userID := c.GetUint("userId")
 
-	if err := initializers.DB.Create(&profil).Error; err != nil {
-		log.Printf("Erreur création profil: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Impossible de créer le profil"})
+	var profil entities.Profil
+	err := initializers.DB.Where("user_id = ?", userID).First(&profil).Error
+	if err == gorm.ErrRecordNotFound {
+		profil := entities.Profil{
+			UserID:         userID,
+			Name:           "Utilisateur",
+			Gender:         "Homme",
+			Age:            25,
+			Weight:         70,
+			Height:         175,
+			CaloriesTarget: 2000,
+			CarbsTarget:    250,
+			ProteinsTarget: 150,
+			FatsTarget:     67,
+			ActivityLevel:  "",
+			Goal:           "",
+		}
+
+		if err := initializers.DB.Create(&profil).Error; err != nil {
+			log.Printf("Erreur création profil: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Impossible de créer le profil"})
+			return
+		}
+	} else if err == nil {
+		log.Printf("Erreur vérification profil existant: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la vérification"})
 		return
 	}
 
@@ -60,6 +72,7 @@ func CreateProfil(c *gin.Context) {
 
 func UpdateProfil(c *gin.Context) {
 	profilID := c.Param("profil_id")
+	userID := c.GetUint("userId")
 
 	if profilID == "" {
 		log.Println("ID profil manquant dans l'URL")
@@ -146,7 +159,7 @@ func UpdateProfil(c *gin.Context) {
 	}
 
 	var existing entities.Profil
-	if err := initializers.DB.First(&existing, "id = ?", profilID).Error; err != nil {
+	if err := initializers.DB.First(&existing, "id = ? AND user_id = ?", profilID, userID).Error; err != nil {
 		log.Printf("Erreur recherche profil ID=%s: %v", profilID, err)
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Profil introuvable"})
@@ -165,7 +178,7 @@ func UpdateProfil(c *gin.Context) {
 	}
 
 	var updatedProfil entities.Profil
-	if err := initializers.DB.First(&updatedProfil, "id = ?", profilID).Error; err != nil {
+	if err := initializers.DB.Where("user_id = ?", userID).First(&updatedProfil, "id = ?", profilID).Error; err != nil {
 		log.Printf("Erreur rechargement profil ID=%s: %v", profilID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Impossible de charger le profil mis à jour"})
 		return

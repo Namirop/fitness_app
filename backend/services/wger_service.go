@@ -22,7 +22,7 @@ func SearchExercises(query string) ([]entities.Exercise, error) {
 		log.Fatal("WGER_API_URL manquant")
 	}
 
-	apiURL := fmt.Sprintf("%s2/exercise/search/?term=%s", baseURL, encodedQuery)
+	apiURL := fmt.Sprintf("%s/exercise/search/?term=%s", baseURL, encodedQuery)
 
 	res, err := http.Get(apiURL)
 	if err != nil {

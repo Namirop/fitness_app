@@ -3,6 +3,7 @@ package main
 import (
 	"go_api/controllers"
 	"go_api/initializers"
+	"go_api/middlewares"
 	"log"
 	"os"
 
@@ -25,20 +26,31 @@ func main() {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
-	r.GET("/workouts", controllers.GetWorkouts)
-	r.POST("/workout", controllers.CreateWorkout)
-	r.PUT("/workout/:workout_id", controllers.UpdateWorkout)
-	r.DELETE("/workout/:workout_id", controllers.DeleteWorkout)
-	r.GET("/exercises", controllers.GetExercisesFromQuery)
+	auth := r.Group("/auth")
+	{
+		auth.POST("/register", controllers.Register)
+		auth.POST("/login", controllers.Login)
+	}
 
-	r.GET("/nutritionday/:date", controllers.GetNutritionDayByDate)
-	r.GET("/foods", controllers.GetFoodsFromQuery)
-	r.POST("/meals/:meal_id/food-portions", controllers.AddFoodPortion)
-	r.DELETE("food-portions/:food_portion_id", controllers.DeleteFoodPortion)
+	api := r.Group("/api")
+	api.Use(middlewares.AuthRequired())
+	{
+		api.GET("/workouts", controllers.GetWorkouts)
+		api.POST("/workout", controllers.CreateWorkout)
+		api.PUT("/workout/:workout_id", controllers.UpdateWorkout)
+		api.DELETE("/workout/:workout_id", controllers.DeleteWorkout)
 
-	r.GET("/profil", controllers.GetProfil)
-	r.POST("/profil", controllers.CreateProfil)
-	r.PUT("/profil/:profil_id", controllers.UpdateProfil)
+		api.GET("/exercises", controllers.GetExercisesFromQuery)
+
+		api.GET("/nutritionday/:date", controllers.GetNutritionDayByDate)
+		api.GET("/foods", controllers.GetFoodsFromQuery)
+		api.POST("/meals/:meal_id/food-portions", controllers.AddFoodPortion)
+		api.DELETE("food-portions/:food_portion_id", controllers.DeleteFoodPortion)
+
+		api.GET("/profil", controllers.GetProfil)
+		api.POST("/profil", controllers.CreateProfil)
+		api.PUT("/profil/:profil_id", controllers.UpdateProfil)
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {

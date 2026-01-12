@@ -14,7 +14,8 @@ import (
 
 func GetWorkouts(c *gin.Context) {
 	var workouts []entities.Workout
-	if err := initializers.DB.Preload("Exercises.Exercise").Find(&workouts).Error; err != nil {
+	userID := c.GetUint("userId")
+	if err := initializers.DB.Where("user_id = ?", userID).Preload("Exercises.Exercise").Find(&workouts).Error; err != nil {
 		log.Printf("Erreur récupération workouts: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Impossible de récupérer les entraînements"})
 		return
@@ -32,6 +33,9 @@ func CreateWorkout(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Données invalides"})
 		return
 	}
+
+	userID := c.GetUint("userId")
+	workout.UserID = userID
 
 	if strings.TrimSpace(workout.Title) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -68,6 +72,7 @@ func CreateWorkout(c *gin.Context) {
 
 func UpdateWorkout(c *gin.Context) {
 	workoutID := c.Param("workout_id")
+	userID := c.GetUint("userId")
 
 	if workoutID == "" {
 		log.Println("ID workout manquant dans l'URL")
@@ -116,7 +121,7 @@ func UpdateWorkout(c *gin.Context) {
 	}()
 
 	var existingWorkout entities.Workout
-	if err := tx.First(&existingWorkout, "id = ?", workoutID).Error; err != nil {
+	if err := tx.First(&existingWorkout, "id = ? AND user_id = ?", workoutID, userID).Error; err != nil {
 		log.Printf("Erreur recherche workout ID=%s: %v", workoutID, err)
 		tx.Rollback()
 		if err == gorm.ErrRecordNotFound {
@@ -126,16 +131,6 @@ func UpdateWorkout(c *gin.Context) {
 		}
 		return
 	}
-	// if err := tx.Preload("Exercises").First(&existingWorkout, "id = ?", workoutID).Error; err != nil {
-	// 	log.Printf("Erreur recherche workout ID=%s: %v", workoutID, err)
-	// 	tx.Rollback()
-	// 	if err == gorm.ErrRecordNotFound {
-	// 		c.JSON(http.StatusNotFound, gin.H{"error": "Entraînement introuvable"})
-	// 	} else {
-	// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erreur lors de la recherche de l'entraînement"})
-	// 	}
-	// 	return
-	// }
 
 	existingWorkout.Title = payload.Title
 	existingWorkout.Note = payload.Note
@@ -182,6 +177,7 @@ func UpdateWorkout(c *gin.Context) {
 
 func DeleteWorkout(c *gin.Context) {
 	workoutID := c.Param("workout_id")
+	userID := c.GetUint("userId")
 
 	if workoutID == "" {
 		log.Println("ID workout manquant dans l'URL")
@@ -189,7 +185,7 @@ func DeleteWorkout(c *gin.Context) {
 		return
 	}
 
-	result := initializers.DB.Delete(&entities.Workout{}, "id = ?", workoutID)
+	result := initializers.DB.Delete(&entities.Workout{}, "id = ? AND user_id = ?", workoutID, userID)
 
 	if result.Error != nil {
 		log.Printf("Erreur suppression workout ID=%s: %v", workoutID, result.Error)
@@ -204,7 +200,7 @@ func DeleteWorkout(c *gin.Context) {
 	}
 
 	var workouts []entities.Workout
-	if err := initializers.DB.Preload("Exercises.Exercise").Find(&workouts).Error; err != nil {
+	if err := initializers.DB.Where("user_id = ?", userID).Preload("Exercises.Exercise").Find(&workouts).Error; err != nil {
 		log.Printf("Erreur récupération workouts après suppression: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Impossible de récupérer les entraînements"})
 		return

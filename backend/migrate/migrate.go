@@ -12,21 +12,24 @@ func init() {
 }
 
 func main() {
-	log.Println("🔄 Début de la migration...")
+	log.Println("Début de la migration...")
 
 	if err := initializers.DB.Migrator().DropTable(
 		&entities.WorkoutExercise{},
 		&entities.Workout{},
 		&entities.Exercise{},
+
 		&entities.FoodPortion{},
 		&entities.Food{},
 		&entities.Meal{},
 		&entities.NutritionDay{},
-		//&models.Profil{},
+
+		&entities.User{},
+		&entities.Profil{},
 	); err != nil {
-		log.Fatal("❌ Erreur lors de la suppression des tables:", err)
+		log.Fatal("Erreur lors de la suppression des tables:", err)
 	}
-	log.Println("✅ Tables supprimées")
+	log.Println("Tables supprimées")
 
 	if err := initializers.DB.AutoMigrate(
 		&entities.Exercise{},
@@ -38,9 +41,10 @@ func main() {
 		&entities.Food{},
 		&entities.FoodPortion{},
 
+		&entities.User{},
 		&entities.Profil{},
 	); err != nil {
-		log.Fatal("❌ Erreur lors de la création des tables:", err)
+		log.Fatal("Erreur lors de la création des tables:", err)
 	}
-	log.Println("✅ Tables recréées avec ON DELETE CASCADE")
+	log.Println("Tables recréées avec ON DELETE CASCADE")
 }

@@ -16,6 +16,7 @@ type Exercise struct {
 
 type Workout struct {
 	ID        string            `gorm:"primaryKey;type:uuid;default:gen_random_uuid()" json:"id"`
+	UserID    uint              `gorm:"index;not null"`
 	Title     string            `gorm:"type:varchar(255);not null" json:"title"`
 	Note      string            `gorm:"type:text" json:"note"`
 	Date      time.Time         `gorm:"not null;index" json:"date"` // ‘index’ for queries by date

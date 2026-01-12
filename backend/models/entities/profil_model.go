@@ -8,6 +8,7 @@ import (
 
 type Profil struct {
 	ID             string         `gorm:"primaryKey;type:uuid;default:gen_random_uuid()" json:"id"`
+	UserID         uint           `gorm:"uniqueIndex;not null"`
 	Name           string         `gorm:"type:varchar(100);not null" json:"name"`
 	Gender         string         `gorm:"type:varchar(10);not null" json:"gender"`
 	Age            int            `gorm:"not null;check:age >= 10 AND age <= 120" json:"age"`

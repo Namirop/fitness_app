@@ -24,17 +24,19 @@ func GetNutritionDayByDate(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Données invalides"})
 		return
 	}
+	userID := c.GetUint("userId")
 	var nutritionDay entities.NutritionDay
 	err := initializers.DB.
 		Preload("Meals", func(db *gorm.DB) *gorm.DB {
 			return db.Order("position ASC")
 		}).
 		Preload("Meals.FoodPortions.Food").
-		Where("DATE(date) = DATE(?)", parsedDate).
+		Where("DATE(date) = DATE(?) AND user_id = ?", parsedDate, userID).
 		First(&nutritionDay).Error
 
 	if err == gorm.ErrRecordNotFound {
 		nutritionDay = entities.NutritionDay{
+			UserID:        userID,
 			Date:          parsedDate,
 			TotalCalories: 0,
 			TotalCarbs:    0,
@@ -101,6 +103,7 @@ func GetFoodsFromQuery(c *gin.Context) {
 
 func AddFoodPortion(c *gin.Context) {
 	mealID := c.Param("meal_id")
+	userID := c.GetUint("userId")
 
 	if mealID == "" {
 		log.Println("ID meal manquant dans l'URL")
@@ -151,7 +154,9 @@ func AddFoodPortion(c *gin.Context) {
 	}()
 
 	var meal entities.Meal
-	if err := tx.First(&meal, "id = ?", mealID).Error; err != nil {
+	if err := tx.Joins("JOIN nutrition_days ON meals.nutrition_day_id = nutrition_days.id").
+		Where("meals.id = ? AND nutrition_days.user_id = ?", mealID, userID).
+		First(&meal).Error; err != nil {
 		log.Printf("Erreur recherche Meal ID=%s: %v", mealID, err)
 		tx.Rollback()
 		if err == gorm.ErrRecordNotFound {
@@ -244,6 +249,7 @@ func AddFoodPortion(c *gin.Context) {
 		return db.Order("position ASC")
 	}).
 		Preload("Meals.FoodPortions.Food").
+		Where("user_id = ?", userID).
 		First(&updatedNutritionDay, "id = ?", payload.NutritionDayId).
 		Error; err != nil {
 		log.Printf("Erreur rechargement NutritionDay ID=%s: %v", payload.NutritionDayId, err)
@@ -258,7 +264,7 @@ func AddFoodPortion(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	c.JSON(http.StatusCreated, gin.H{
 		"message":      "Portion ajoutée",
 		"nutritionDay": updatedNutritionDay,
 	})
@@ -266,6 +272,7 @@ func AddFoodPortion(c *gin.Context) {
 
 func DeleteFoodPortion(c *gin.Context) {
 	foodPortionID := c.Param("food_portion_id")
+	userID := c.GetUint("userId")
 
 	if foodPortionID == "" {
 		log.Println("ID FoodPortion manquant dans l'URL")
@@ -287,7 +294,10 @@ func DeleteFoodPortion(c *gin.Context) {
 	}()
 
 	var portion entities.FoodPortion
-	if err := tx.First(&portion, "id = ?", foodPortionID).Error; err != nil {
+	if err := tx.Joins("JOIN meals ON food_portions.meal_id = meals.id").
+		Joins("JOIN nutrition_days ON meals.nutrition_day_id = nutrition_days.id").
+		Where("food_portions.id = ? AND nutrition_days.user_id = ?", foodPortionID, userID).
+		First(&portion).Error; err != nil {
 		log.Printf("Erreur recherche FoodPortion ID=%s: %v", foodPortionID, err)
 		tx.Rollback()
 		if err == gorm.ErrRecordNotFound {
@@ -347,6 +357,7 @@ func DeleteFoodPortion(c *gin.Context) {
 		return db.Order("position ASC")
 	}).
 		Preload("Meals.FoodPortions.Food").
+		Where("user_id = ?", userID).
 		First(&updatedNutritionDay, "id = ?", meal.NutritionDayID).
 		Error; err != nil {
 		log.Printf("Erreur rechargement NutritionDay ID=%s: %v", meal.NutritionDayID, err)

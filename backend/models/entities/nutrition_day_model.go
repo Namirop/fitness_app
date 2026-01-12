@@ -5,6 +5,7 @@ import "time"
 
 type NutritionDay struct {
 	ID            string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()" json:"id"`
+	UserID        uint      `gorm:"index;not null"`
 	Date          time.Time `gorm:"not null;uniqueIndex" json:"date"`
 	TotalCalories float64   `gorm:"default:0;check:total_calories >= 0" json:"totalCalories"`
 	TotalCarbs    float64   `gorm:"default:0;check:total_carbs >= 0" json:"totalCarbs"`
@@ -32,6 +33,7 @@ type Meal struct {
 
 type FoodPortion struct {
 	ID            string    `gorm:"primaryKey;type:uuid;default:gen_random_uuid()" json:"id"`
+	UserID        uint      `gorm:"index;not null"`
 	MealID        string    `gorm:"type:uuid;not null;index" json:"-"`
 	FoodID        string    `gorm:"type:varchar(255);not null;index" json:"-"`
 	Quantity      float64   `gorm:"not null;check:quantity > 0" json:"quantity"`
