@@ -42,8 +42,8 @@ func main() {
 
 	auth := r.Group("/auth")
 	{
-		auth.POST("/login", middlewares.RateLimit(5, time.Minute), controllers.Register)
-		auth.POST("/register", controllers.Login)
+		auth.POST("/login", middlewares.RateLimit(5, time.Minute), controllers.Login)
+		auth.POST("/register", controllers.Register)
 	}
 
 	api := r.Group("/api")
