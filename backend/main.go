@@ -23,6 +23,8 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	// test ci/cd actions
+
 	if err := initializers.DB.AutoMigrate(
 		&entities.User{},
 		&entities.Exercise{},
