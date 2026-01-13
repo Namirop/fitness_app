@@ -180,7 +180,9 @@ class LastWorkoutContainer extends StatelessWidget {
       );
     }
 
-    return Center(child: CircularProgressIndicator(color: Colors.white38));
+    return Center(
+      child: CircularProgressIndicator(color: AppColors.containerBorderColor),
+    );
   }
 
   Widget _buildAddWorkoutButton(BuildContext context) {

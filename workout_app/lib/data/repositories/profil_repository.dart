@@ -5,14 +5,22 @@ import 'package:workout_app/core/errors/api_exception.dart';
 import 'package:workout_app/data/entities/profil/profil_entity.dart';
 import 'package:http/http.dart' as http;
 import 'package:workout_app/data/models/profil/profil_model.dart';
+import 'package:workout_app/data/services/auth_service.dart';
 
 class ProfilRepository {
-  final baseUrl = "http://10.0.2.2:3000";
+  final baseUrl = "http://10.0.2.2:3000/api";
   Future<ProfilModel> getProfil() async {
     try {
+      final token = await AuthService.getToken();
       final url = Uri.parse("$baseUrl/profil");
       final response = await http
-          .get(url, headers: {"Content-Type": "application/json"})
+          .get(
+            url,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
           .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
@@ -29,9 +37,16 @@ class ProfilRepository {
 
   Future<ProfilModel> createProfil() async {
     try {
+      final token = await AuthService.getToken();
       final url = Uri.parse("$baseUrl/profil");
       final response = await http
-          .post(url, headers: {"Content-Type": "application/json"})
+          .post(
+            url,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
           .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 201) {
@@ -48,12 +63,16 @@ class ProfilRepository {
 
   Future<ProfilModel> updateProfil(ProfilEntity profil) async {
     try {
+      final token = await AuthService.getToken();
       final url = Uri.parse("$baseUrl/profil/${profil.id}");
       final jsonBody = ProfilModel.fromEntity(profil).toJson();
       final response = await http
           .put(
             url,
-            headers: {"Content-Type": "application/json"},
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
             body: jsonEncode(jsonBody),
           )
           .timeout(const Duration(seconds: 15));

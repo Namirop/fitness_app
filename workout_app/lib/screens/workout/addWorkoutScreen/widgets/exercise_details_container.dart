@@ -117,7 +117,7 @@ class _ExerciseDetailsContainerState extends State<ExerciseDetailsContainer> {
         const SizedBox(width: 15),
         _buildSlider(
           icon: const FaIcon(FontAwesomeIcons.weightHanging, size: 17),
-          label: "Weight",
+          label: "Poids",
           min: 1,
           max: 150,
           initialValue: ex.weight.toDouble(),

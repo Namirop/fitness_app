@@ -29,8 +29,8 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<NutritionBloc>().add(LoadDailyNutrition());
       context.read<ProfilBloc>().add(GetCachedProfil());
+      context.read<NutritionBloc>().add(LoadDailyNutrition());
       context.read<WorkoutBloc>().add(GetExistingWorkouts());
     });
   }
@@ -58,11 +58,11 @@ class _MainScreenState extends State<MainScreen> {
                         if (state.selectedNutritionDateStatus ==
                             SelectedNutritionDateStatus.loading) {
                           return Shimmer.fromColors(
-                            baseColor: Colors.grey.shade300,
-                            highlightColor: Colors.grey.shade100,
+                            baseColor: Color.fromARGB(255, 238, 228, 206),
+                            highlightColor: Color.fromARGB(255, 243, 239, 227),
                             child: Container(
-                              width: 60,
-                              height: 25,
+                              width: 140,
+                              height: 40,
                               decoration: BoxDecoration(
                                 color: Colors.grey,
                                 borderRadius: BorderRadius.circular(4),
@@ -99,13 +99,13 @@ class _MainScreenState extends State<MainScreen> {
                   builder: (context, state) {
                     if (state.loadProfilStatus == LoadProfilStatus.loading) {
                       return Shimmer.fromColors(
-                        baseColor: Colors.grey.shade300,
-                        highlightColor: Colors.grey.shade100,
+                        baseColor: Color.fromARGB(255, 238, 228, 206),
+                        highlightColor: Color.fromARGB(255, 243, 239, 227),
                         child: Container(
-                          width: 60,
-                          height: 25,
+                          width: 140,
+                          height: 40,
                           decoration: BoxDecoration(
-                            color: Colors.grey,
+                            color: const Color.fromARGB(255, 207, 207, 207),
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
@@ -127,7 +127,7 @@ class _MainScreenState extends State<MainScreen> {
                 LastWorkoutContainer(),
                 const SizedBox(height: 10),
                 const Text(
-                  "Infos nutritionnels journalière : ",
+                  "Infos nutritionnelles journalières : ",
                   style: TextStyle(
                     fontSize: 25,
                     letterSpacing: -0.6,

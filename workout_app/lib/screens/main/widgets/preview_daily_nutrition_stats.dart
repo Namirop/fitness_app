@@ -17,6 +17,8 @@ class PreviewDailyNutritionStats extends StatelessWidget {
           builder: (context, profilState) {
             final nutritionDay = nutritionState.currentNutritionDay;
             final profil = profilState.currentProfil;
+            final isLoading =
+                profilState.loadProfilStatus == LoadProfilStatus.loading;
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -26,6 +28,7 @@ class PreviewDailyNutritionStats extends StatelessWidget {
                   label: "Glucides",
                   total: nutritionDay.formattedTotalCarbs,
                   target: profil.displayCarbsTarget,
+                  isLoading: isLoading,
                 ),
                 MacroNutrientCard(
                   assetPath: 'assets/images/protein_icon.png',
@@ -33,6 +36,7 @@ class PreviewDailyNutritionStats extends StatelessWidget {
                   label: "Protéines",
                   total: nutritionDay.formattedTotalProteins,
                   target: profil.displayProteinsTarget,
+                  isLoading: isLoading,
                 ),
                 MacroNutrientCard(
                   assetPath: 'assets/images/carbs_icon.png',
@@ -40,6 +44,7 @@ class PreviewDailyNutritionStats extends StatelessWidget {
                   label: "Lipides",
                   total: nutritionDay.formattedTotalFats,
                   target: profil.displayFatsTarget,
+                  isLoading: isLoading,
                 ),
               ],
             );

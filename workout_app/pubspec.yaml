@@ -25,6 +25,7 @@ dependencies:
   sleek_circular_slider: ^2.1.0
   fl_chart: ^1.1.1
   shimmer: ^3.0.0
+  flutter_secure_storage: ^10.0.0
 
 dev_dependencies:
   flutter_test:

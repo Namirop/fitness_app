@@ -229,6 +229,7 @@ class _AddWorkoutScreenState extends State<AddWorkoutScreen> {
       // Allows you to return to MainScreen regardless of where you open this page.
       Navigator.of(context).popUntil((route) => route.isFirst);
     } else if (state.submitWorkoutStatus == SubmitWorkoutStatus.failure) {
+      print("handle state");
       SnackbarHelper.showError(
         context,
         state.saveWorkoutErrorString ?? 'Erreur ajout',

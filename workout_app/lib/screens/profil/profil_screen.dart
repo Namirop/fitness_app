@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:workout_app/blocs/ProfilBloc/profil_bloc.dart';
 import 'package:workout_app/blocs/ProfilBloc/profil_state.dart';
 import 'package:workout_app/core/constants/app_constants.dart';
@@ -48,13 +49,42 @@ class ProfilScreen extends StatelessWidget {
                         size: 100,
                       ),
                       SizedBox(height: 5),
-                      Text(
-                        currentProfil.displayName,
-                        style: TextStyle(
-                          fontSize: 35,
-                          fontWeight: FontWeight.normal,
-                          letterSpacing: -0.5,
-                        ),
+                      BlocBuilder<ProfilBloc, ProfilState>(
+                        builder: (context, state) {
+                          if (state.loadProfilStatus ==
+                              LoadProfilStatus.loading) {
+                            return Shimmer.fromColors(
+                              baseColor: Color.fromARGB(255, 238, 228, 206),
+                              highlightColor: Color.fromARGB(
+                                255,
+                                243,
+                                239,
+                                227,
+                              ),
+                              child: Container(
+                                width: 140,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    207,
+                                    207,
+                                    207,
+                                  ),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                            );
+                          }
+                          return Text(
+                            currentProfil.displayName,
+                            style: TextStyle(
+                              fontSize: 35,
+                              fontWeight: FontWeight.normal,
+                              letterSpacing: -0.5,
+                            ),
+                          );
+                        },
                       ),
                       SizedBox(height: 15),
                       ProfilInfoContainer(

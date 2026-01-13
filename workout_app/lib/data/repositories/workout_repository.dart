@@ -5,13 +5,23 @@ import 'package:workout_app/core/errors/api_exception.dart';
 import 'package:workout_app/data/entities/workout/workout_entity.dart';
 import 'package:workout_app/data/models/workout/exercise_model.dart';
 import 'package:workout_app/data/models/workout/workout_model.dart';
+import 'package:workout_app/data/services/auth_service.dart';
 
 class WorkoutRepository {
-  final baseUrl = "http://10.0.2.2:3000";
+  final baseUrl = "http://10.0.2.2:3000/api";
   Future<List<WorkoutModel>> getWorkouts() async {
     try {
+      final token = await AuthService.getToken();
       final url = Uri.parse('$baseUrl/workouts');
-      final response = await http.get(url).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(
+            url,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final List workoutsJson = data['workouts'];
@@ -29,12 +39,16 @@ class WorkoutRepository {
 
   Future<WorkoutModel> createWorkout(WorkoutEntity workout) async {
     try {
+      final token = await AuthService.getToken();
       final url = Uri.parse("$baseUrl/workout");
       final jsonBody = WorkoutModel.fromEntity(workout).toJson();
       final response = await http
           .post(
             url,
-            headers: {"Content-Type": "application/json"},
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
             body: jsonEncode(jsonBody),
           )
           .timeout(const Duration(seconds: 15));
@@ -53,12 +67,16 @@ class WorkoutRepository {
 
   Future<WorkoutModel> updateWorkout(WorkoutEntity workout) async {
     try {
+      final token = await AuthService.getToken();
       final url = Uri.parse("$baseUrl/workout/${workout.id}");
       final jsonBody = WorkoutModel.fromEntity(workout).toJson();
       final response = await http
           .put(
             url,
-            headers: {"Content-Type": "application/json"},
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
             body: jsonEncode(jsonBody),
           )
           .timeout(const Duration(seconds: 15));
@@ -77,9 +95,16 @@ class WorkoutRepository {
 
   Future<List<WorkoutModel>> deleteWorkout(String workoutId) async {
     try {
+      final token = await AuthService.getToken();
       final url = Uri.parse("$baseUrl/workout/$workoutId");
       final response = await http
-          .delete(url)
+          .delete(
+            url,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
@@ -99,8 +124,17 @@ class WorkoutRepository {
 
   Future<List<ExerciseModel>> fetchExercisesFromQuery(String query) async {
     try {
+      final token = await AuthService.getToken();
       final url = Uri.parse('$baseUrl/exercises?q=$query');
-      final response = await http.get(url).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(
+            url,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

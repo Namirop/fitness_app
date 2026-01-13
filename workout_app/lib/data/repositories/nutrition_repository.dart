@@ -7,13 +7,23 @@ import 'package:workout_app/core/errors/api_exception.dart';
 import 'package:workout_app/data/dto/add_food_portion_dto.dart';
 import 'package:workout_app/data/models/nutrition/food_model.dart';
 import 'package:workout_app/data/models/nutrition/nutrition_day_model.dart';
+import 'package:workout_app/data/services/auth_service.dart';
 
 class NutritionRepository {
-  final baseUrl = "http://10.0.2.2:3000";
+  final baseUrl = "http://10.0.2.2:3000/api";
   Future<NutritionDayModel?> getNutritionDay(String currentDate) async {
     try {
+      final token = await AuthService.getToken();
       final url = Uri.parse('$baseUrl/nutritionday/$currentDate');
-      final response = await http.get(url).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(
+            url,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -31,8 +41,17 @@ class NutritionRepository {
 
   Future<List<FoodModel>> getFoodList(String query) async {
     try {
+      final token = await AuthService.getToken();
       final url = Uri.parse('$baseUrl/foods?q=$query');
-      final response = await http.get(url).timeout(const Duration(seconds: 20));
+      final response = await http
+          .get(
+            url,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 20));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final List foodList = data['foodList'];
@@ -51,6 +70,7 @@ class NutritionRepository {
     AddFoodPortionDto addFoodPortionDto,
   ) async {
     try {
+      final token = await AuthService.getToken();
       final url = Uri.parse(
         "$baseUrl/meals/${addFoodPortionDto.mealId}/food-portions",
       );
@@ -58,7 +78,10 @@ class NutritionRepository {
       final response = await http
           .post(
             url,
-            headers: {"Content-Type": "application/json"},
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
             body: jsonEncode(jsonBody),
           )
           .timeout(const Duration(seconds: 15));
@@ -78,9 +101,16 @@ class NutritionRepository {
 
   Future<NutritionDayModel> deleteFoodPortion(String foodPortionId) async {
     try {
+      final token = await AuthService.getToken();
       final url = Uri.parse("$baseUrl/food-portions/$foodPortionId");
       final response = await http
-          .delete(url)
+          .delete(
+            url,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
           .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {

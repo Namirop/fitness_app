@@ -30,13 +30,34 @@ class WorkoutDetailsContainer extends StatefulWidget {
 class _WorkoutDetailsContainerState extends State<WorkoutDetailsContainer> {
   Timer? _debounceTitle;
   Timer? _debounceNote;
-  static const double _workoutDetailsHeight = 195;
+  late TextEditingController _titleController;
+  late TextEditingController _noteController;
+
+  @override
+  void initState() {
+    _titleController = TextEditingController(text: widget.workout.title);
+    _noteController = TextEditingController(text: widget.workout.note);
+    super.initState();
+  }
 
   @override
   void dispose() {
+    super.dispose();
     _debounceTitle?.cancel();
     _debounceNote?.cancel();
-    super.dispose();
+    _titleController.dispose();
+    _noteController.dispose();
+  }
+
+  @override
+  void didUpdateWidget(WorkoutDetailsContainer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.workout.title != widget.workout.title) {
+      _titleController.text = widget.workout.title;
+    }
+    if (oldWidget.workout.note != widget.workout.note) {
+      _noteController.text = widget.workout.note;
+    }
   }
 
   @override
@@ -52,7 +73,7 @@ class _WorkoutDetailsContainerState extends State<WorkoutDetailsContainer> {
         padding: const EdgeInsets.fromLTRB(15, 10, 15, 15),
         child: widget.isSavingOrLoading
             ? SizedBox(
-                height: _workoutDetailsHeight,
+                height: 195,
                 child: Center(
                   child: CircularProgressIndicator(
                     color: AppColors.containerBorderColor,
@@ -60,26 +81,30 @@ class _WorkoutDetailsContainerState extends State<WorkoutDetailsContainer> {
                 ),
               )
             : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      CustomIcon(
-                        size: 45,
-                        icon: const FaIcon(
-                          FontAwesomeIcons.stopwatch,
-                          size: 25,
-                        ),
+                      Row(
+                        children: [
+                          CustomIcon(
+                            size: 45,
+                            icon: const FaIcon(
+                              FontAwesomeIcons.dumbbell,
+                              size: 22,
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            "Workout",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 28,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 10),
-                      Text(
-                        "Workout :",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 30,
-                        ),
-                      ),
-                      SizedBox(width: 10),
                       CustomIcon(
                         onTap: () async {
                           final confirm = await DialogHelper.showConfirmDialog(
@@ -94,31 +119,28 @@ class _WorkoutDetailsContainerState extends State<WorkoutDetailsContainer> {
                             );
                           }
                         },
-                        topPadding: 5,
-                        size: 25,
-                        icon: Icon(Icons.restart_alt_sharp, size: 15),
+                        size: 40,
+                        color: Colors.transparent,
+                        icon: Icon(
+                          Icons.restart_alt,
+                          size: 22,
+                          color: Colors.black54,
+                        ),
                       ),
                     ],
                   ),
+                  SizedBox(height: 15),
+                  _buildTitleField(),
                   SizedBox(height: 10),
-                  SizedBox(
-                    height: 140,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _buildTitleContainer(workout.title),
-                              SizedBox(height: 7),
-                              _buildDateContainer(workout.date),
-                            ],
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        _buildNoteContainer(workout.note),
-                      ],
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: _buildDateContainer(workout.date),
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(flex: 3, child: _buildNoteField()),
+                    ],
                   ),
                 ],
               ),
@@ -126,37 +148,46 @@ class _WorkoutDetailsContainerState extends State<WorkoutDetailsContainer> {
     );
   }
 
-  Widget _buildTitleContainer(String title) {
+  Widget _buildTitleField() {
     return Container(
-      height: 40,
       decoration: BoxDecoration(
-        color: const Color.fromARGB(87, 235, 209, 137),
+        color: Colors.white.withOpacity(0.6),
         borderRadius: BorderRadius.circular(AppBorderRadius.small),
+        border: Border.all(
+          color: AppColors.containerBorderColor.withOpacity(0.3),
+          width: 1,
+        ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Center(
-          child: TextFormField(
-            key: ValueKey('workout_title_${DateTime.now().toString()}'),
-            initialValue: title,
-            decoration: InputDecoration(
-              hintText: "Titre",
-              isDense: true,
-              contentPadding: EdgeInsets.all(8),
-            ),
-            keyboardType: TextInputType.text,
-            style: const TextStyle(fontSize: 11),
-            onChanged: (query) {
-              _debounceTitle?.cancel();
-              _debounceTitle = Timer(const Duration(milliseconds: 500), () {
-                if (query.length > 2) {
-                  context.read<WorkoutBloc>().add(
-                    UpdateWorkoutDetails(title: query),
-                  );
-                }
-              });
-            },
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: TextField(
+          controller: _titleController,
+          cursorColor: Colors.black87,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
           ),
+          decoration: InputDecoration(
+            hintText: "Titre de l'entraînement",
+            hintStyle: TextStyle(
+              color: Colors.black38,
+              fontWeight: FontWeight.normal,
+            ),
+            border: InputBorder.none,
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(vertical: 8),
+          ),
+          onChanged: (query) {
+            _debounceTitle?.cancel();
+            _debounceTitle = Timer(const Duration(milliseconds: 600), () {
+              if (query.length > 2) {
+                context.read<WorkoutBloc>().add(
+                  UpdateWorkoutDetails(title: query),
+                );
+              }
+            });
+          },
         ),
       ),
     );
@@ -181,7 +212,6 @@ class _WorkoutDetailsContainerState extends State<WorkoutDetailsContainer> {
             if (normalizedPickerDate == workoutDate) {
               return true;
             }
-
             return !widget.workoutDays.contains(normalizedPickerDate);
           },
         );
@@ -195,52 +225,67 @@ class _WorkoutDetailsContainerState extends State<WorkoutDetailsContainer> {
       child: Container(
         height: 80,
         decoration: BoxDecoration(
-          color: const Color.fromARGB(87, 235, 209, 137),
+          color: Colors.white.withOpacity(0.6),
           borderRadius: BorderRadius.circular(AppBorderRadius.small),
-        ),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              DateFormat('dd/MM/yyyy').format(date),
-              style: const TextStyle(fontSize: 18),
-            ),
+          border: Border.all(
+            color: AppColors.containerBorderColor.withOpacity(0.3),
+            width: 1,
           ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.calendar_today, size: 20, color: Colors.black54),
+            SizedBox(height: 6),
+            Text(
+              DateFormat('dd/MM/yyyy').format(date),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildNoteContainer(String note) {
-    return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(87, 235, 209, 137),
-          borderRadius: BorderRadius.circular(AppBorderRadius.small),
+  Widget _buildNoteField() {
+    return Container(
+      height: 80,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(AppBorderRadius.small),
+        border: Border.all(
+          color: AppColors.containerBorderColor.withOpacity(0.3),
+          width: 1,
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Center(
-            child: TextFormField(
-              key: ValueKey('workout_note_${DateTime.now().toString()}'),
-              initialValue: note,
-              decoration: InputDecoration(
-                hintText: "Note",
-                isDense: true,
-                contentPadding: EdgeInsets.all(8),
-              ),
-              keyboardType: TextInputType.multiline,
-              style: const TextStyle(fontSize: 11),
-              onChanged: (value) {
-                _debounceNote?.cancel();
-                _debounceNote = Timer(const Duration(milliseconds: 500), () {
-                  context.read<WorkoutBloc>().add(
-                    UpdateWorkoutDetails(note: value),
-                  );
-                });
-              },
-            ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: TextField(
+          controller: _noteController,
+          maxLines: null,
+          expands: true,
+          textAlignVertical: TextAlignVertical.top,
+          cursorColor: Colors.black87,
+          style: TextStyle(fontSize: 13, color: Colors.black87, height: 1.3),
+          decoration: InputDecoration(
+            hintText: "Notes...",
+            hintStyle: TextStyle(color: Colors.black38, fontSize: 13),
+            border: InputBorder.none,
+            isDense: true,
+            contentPadding: EdgeInsets.zero,
           ),
+          onChanged: (value) {
+            _debounceNote?.cancel();
+            _debounceNote = Timer(const Duration(milliseconds: 600), () {
+              context.read<WorkoutBloc>().add(
+                UpdateWorkoutDetails(note: value),
+              );
+            });
+          },
         ),
       ),
     );

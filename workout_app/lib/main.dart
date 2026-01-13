@@ -13,6 +13,7 @@ import 'package:workout_app/data/entities/workout/workout_exercise_entity.dart';
 import 'package:workout_app/data/repositories/nutrition_repository.dart';
 import 'package:workout_app/data/repositories/profil_repository.dart';
 import 'package:workout_app/data/repositories/workout_repository.dart';
+import 'package:workout_app/data/services/auth_service.dart';
 import 'package:workout_app/data/services/profil_cache_service.dart';
 import 'package:workout_app/data/services/workout_cache_service.dart';
 import 'package:workout_app/screens/home_screen.dart';
@@ -31,6 +32,15 @@ void main() async {
     Hive.registerAdapter(ProfilEntityAdapter());
     final workoutBox = await Hive.openBox<WorkoutEntity>('draftWorkout');
     final profilBox = await Hive.openBox<ProfilEntity>('draftProfil');
+
+    final token = await AuthService.autoLogin();
+    if (token == null) {
+      return runApp(
+        MaterialApp(
+          home: Scaffold(body: Center(child: Text('Erreur de connexion'))),
+        ),
+      );
+    }
     runApp(MyApp(workoutBox: workoutBox, profilBox: profilBox));
   } catch (e) {
     return runApp(
