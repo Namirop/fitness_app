@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"go_api/services"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -31,12 +32,14 @@ func Register(c *gin.Context) {
 func Login(c *gin.Context) {
 	var payload AuthPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
+		log.Printf("Eerror binding: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Payload invalide"})
 		return
 	}
 
 	token, err := services.Login(payload.Email, payload.Password)
 	if err != nil {
+		log.Printf("error login: %v", err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
