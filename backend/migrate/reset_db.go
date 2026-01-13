@@ -1,5 +1,7 @@
 package main
 
+// dev_reset.go - ⚠️ DEV ONLY - Drops and recreates all tables
+
 import (
 	"go_api/initializers"
 	entities "go_api/models/entities"

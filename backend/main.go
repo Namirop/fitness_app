@@ -4,6 +4,7 @@ import (
 	"go_api/controllers"
 	"go_api/initializers"
 	"go_api/middlewares"
+	"go_api/models/entities"
 	"log"
 	"os"
 	"time"
@@ -21,6 +22,21 @@ func main() {
 	if os.Getenv("ENV") == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
+
+	if err := initializers.DB.AutoMigrate(
+		&entities.User{},
+		&entities.Exercise{},
+		&entities.Workout{},
+		&entities.WorkoutExercise{},
+		&entities.NutritionDay{},
+		&entities.Meal{},
+		&entities.Food{},
+		&entities.FoodPortion{},
+		&entities.Profil{},
+	); err != nil {
+		log.Fatal("Migration failed:", err)
+	}
+	log.Println("Database schema synced")
 
 	r := gin.New()
 	r.Use(gin.Logger())
