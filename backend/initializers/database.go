@@ -12,9 +12,9 @@ import (
 var DB *gorm.DB
 
 func ConnectToDb() {
-	dsn := os.Getenv("DB_URL")
+	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		log.Fatal("DB_URL not set in environment")
+		log.Fatal("DATABASE_URL pas set dans l'environnement")
 	}
 
 	// Silent mode for sql logs
@@ -24,8 +24,9 @@ func ConnectToDb() {
 	})
 
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		log.Fatal("Erreur lors de la connection à la DB:", err)
 	}
 
-	log.Println("Database connected")
+	log.Println("DB connectée")
+
 }

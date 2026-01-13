@@ -1,5 +1,5 @@
 # 1️⃣ Image Go officielle
-FROM golang:1.22-alpine
+FROM golang:1.24-alpine
 
 # 2️⃣ Dossier de travail dans le container
 WORKDIR /app
