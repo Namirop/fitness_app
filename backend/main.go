@@ -23,8 +23,6 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// test ci/cd actions
-
 	if err := initializers.DB.AutoMigrate(
 		&entities.User{},
 		&entities.Exercise{},
@@ -51,8 +49,6 @@ func main() {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
-
-	// AllowOrigins: []string{os.Getenv("FRONTEND_URL")}, // en prod
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
