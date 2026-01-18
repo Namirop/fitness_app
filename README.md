@@ -12,6 +12,11 @@ A complete Flutter mobile application for workout and nutrition tracking with au
 - **Exercise Library**: 800+ exercises from WGER API
 - **Food Database**: Nutritional data from Open Food Facts API
 
+## 🚀 Live Demo
+
+**Backend API:** [https://fitnessapp-production-ad23.up.railway.app](https://fitnessapp-production-ad23.up.railway.app)
+**Health Check:** [https://fitnessapp-production-ad23.up.railway.app/health](https://fitnessapp-production-ad23.up.railway.app/health)
+
 ## 🛠️ Tech Stack
 
 **Frontend**
@@ -21,9 +26,15 @@ A complete Flutter mobile application for workout and nutrition tracking with au
 - Clean Architecture (entities/models/repositories)
 
 **Backend**
-- Go 1.21+ with Gin framework
+- Go 1.24+ with Gin framework
 - PostgreSQL with GORM
 - RESTful API architecture
+- JWT authentication
+- Docker
+
+**Infrastructure:**
+- Railway (hosting + DB)
+- GitHub Actions (CI/CD)
 
 **External APIs**
 - [WGER API](https://wger.de/en/software/api) - Exercise database
@@ -50,18 +61,18 @@ cd backend
 # Install dependencies
 go mod download
 
-# Create database
-createdb fitness_app_db
-
 # Configure environment variables
 cp .env.example .env
-# Edit .env with your database credentials
+# Edit .env:
+# DATABASE_URL: Your Railway or local PostgreSQL URL
+# JWT_SECRET: Generate a random key (32+ chars)
+# PORT: 3000 (or any available port)
 
-# Run migrations
-go run main.go migrate
-
-# Start server (default port: 3000)
+# Migrations run automatically on startup
 go run main.go
+
+# Server runs on http://localhost:3000
+# Test: curl http://localhost:3000/health
 ```
 
 ### 2. Mobile App Setup
@@ -71,12 +82,35 @@ cd ../workout_app
 # Install dependencies
 flutter pub get
 
-# Update backend URL in lib/data/repositories/*_repository.dart
-# Change baseUrl from "http://10.0.2.2:3000" to your backend URL
-
-# Run app
+# Run on emulator/device
 flutter run
+
+# Note: Update API URL in repositories to point to:
+# - Local: http://10.0.2.2:3000 (Android emulator)
+# - Prod: [https://ton-app.up.railway.app](https://fitnessapp-production-ad23.up.railway.app)
 ```
+
+## 🐳 Docker
+
+### Build & Run
+```bash
+cd backend
+docker build -t fitness-backend .
+docker run -p 3000:3000 \
+  -e DATABASE_URL="your-db-url" \
+  -e JWT_SECRET="your-secret" \
+  -e PORT=3000 \
+  fitness-backend
+```
+
+## 🌐 Production
+
+**The production backend is already deployed on Railway:**
+- API: https://fitnessapp-production-ad23.up.railway.app
+- Database: Hosted on Railway PostgreSQL
+- Auto-deploys on push to `main` branch
+
+**No manual deployment needed** - just push your code!
 
 ## 📁 Project Structure
 ```
@@ -94,6 +128,13 @@ lib/
 │   └── utils/          # Helper functions
 └── main.dart           # App entry point
 ```
+
+## 🔒 Security
+- ✅ Hashed passwords (bcrypt)
+- ✅ JWT with expiration (72 hours)
+- ✅ Data isolation by user_id
+- ✅ Sensitive variables in environment
+- ✅ HTTPS in production (Railway)
 
 ## 🎨 Technical Decisions
 
@@ -120,10 +161,10 @@ lib/
 ## 🗺️ Roadmap
 
 - [x] Core MVP (workout + nutrition tracking)
+- [ ] Authentification screens
 - [ ] Barcode feature
 - [ ] Dark mode
 - [ ] Multi-language support (French/English)
-- [ ] Progress statistics and charts
 
 ## 🐛 Known Issues
 
@@ -138,8 +179,8 @@ This project is licensed under the MIT License - see LICENSE file for details.
 
 **Romain Maes**
 - GitHub: [@Namirop](https://github.com/Namirop)
-- LinkedIn: [TODO]
-- Portfolio: [TODO]
+- LinkedIn: [https://www.linkedin.com/in/romainmaes/](https://www.linkedin.com/in/romainmaes/)
+- Portfolio: [https://romaindev.carrd.co/](https://romaindev.carrd.co/)
 
 ---
 
