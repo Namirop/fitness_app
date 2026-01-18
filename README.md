@@ -43,7 +43,11 @@ A complete Flutter mobile application for workout and nutrition tracking with au
 
 ## 📱 Screenshots
 
-[TODO: Add 3-4 key screenshots]
+<img width="240" height="600" alt="main screen" src="https://github.com/user-attachments/assets/9c3c3528-90ed-44ae-87f2-7ff01c45f994" />
+<img width="240" height="600" alt="add screen" src="https://github.com/user-attachments/assets/ffe8d884-6ba0-4278-a293-9d4dbf3757b3" />
+<img width="240" height="600" alt="calendar screen" src="https://github.com/user-attachments/assets/7dd1eab8-942f-48a1-8cf3-3981810c15c0" />
+<img width="240" height="600" alt="nutrition day" src="https://github.com/user-attachments/assets/16cff14d-25c6-4301-96e6-5794acf5ab58" />
+
 
 ## 🚀 Quick Start
 
