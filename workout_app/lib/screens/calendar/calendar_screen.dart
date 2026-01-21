@@ -47,7 +47,7 @@ class CalendarScreen extends StatelessWidget {
                               Transform.scale(
                                 scaleY: 1.1,
                                 child: Text(
-                                  "Calendrier :",
+                                  "Calendar :",
                                   style: TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,

@@ -12,6 +12,7 @@ class ProfilRepository {
   Future<ProfilModel> getProfil() async {
     try {
       final token = await AuthService.getToken();
+      print("TOKEN RECUPERE: '$token'");
       final url = Uri.parse("$baseUrl/profil");
       final response = await http
           .get(
@@ -38,6 +39,7 @@ class ProfilRepository {
   Future<ProfilModel> createProfil() async {
     try {
       final token = await AuthService.getToken();
+      print("TOKEN RECUPERE: '$token'");
       final url = Uri.parse("$baseUrl/profil");
       final response = await http
           .post(

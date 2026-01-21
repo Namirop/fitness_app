@@ -1,6 +1,6 @@
 import 'package:hive_flutter/adapters.dart';
 import 'package:workout_app/data/entities/workout/exercise_entity.dart';
-part 'g.dart/workout_exercise_entity.g.dart';
+part 'workout_exercise_entity.g.dart';
 
 @HiveType(typeId: 2)
 class WorkoutExerciseEntity {

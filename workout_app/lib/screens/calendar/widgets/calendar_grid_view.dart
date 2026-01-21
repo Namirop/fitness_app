@@ -65,7 +65,7 @@ class _CalendarGridViewState extends State<CalendarGridView> {
                 Transform.scale(
                   scaleY: 1.1,
                   child: Text(
-                    "${DateFormat('MMM', 'fr_FR').format(_currentDate)} ${DateFormat('yyyy', 'fr_FR').format(_currentDate)}",
+                    "${DateFormat('MMM', 'en_EN').format(_currentDate)} ${DateFormat('yyyy', 'en_EN').format(_currentDate)}",
                     style: TextStyle(
                       fontSize: 27,
                       fontWeight: FontWeight.bold,

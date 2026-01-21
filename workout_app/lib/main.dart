@@ -24,15 +24,14 @@ void main() async {
   try {
     await initializeDateFormatting('fr_FR', null);
     await Hive.initFlutter();
-    //await Hive.deleteBoxFromDisk('draftProfil');
-    //await Hive.deleteBoxFromDisk('draftWorkout');
+    // await Hive.deleteBoxFromDisk('draftProfil');
+    // await Hive.deleteBoxFromDisk('draftWorkout');
     Hive.registerAdapter(WorkoutEntityAdapter());
     Hive.registerAdapter(WorkoutExerciseEntityAdapter());
     Hive.registerAdapter(ExerciseEntityAdapter());
     Hive.registerAdapter(ProfilEntityAdapter());
     final workoutBox = await Hive.openBox<WorkoutEntity>('draftWorkout');
     final profilBox = await Hive.openBox<ProfilEntity>('draftProfil');
-
     final token = await AuthService.autoLogin();
     if (token == null) {
       return runApp(
