@@ -5,6 +5,7 @@ A complete Flutter mobile application for workout and nutrition tracking with au
 ## 🚀 Live Demo
 
 **Backend API:** https://fitnessapp-production-ad23.up.railway.app
+
 **Health Check:** https://fitnessapp-production-ad23.up.railway.app/health
 
 ## ✨ Features
@@ -93,7 +94,7 @@ flutter run
 
 # Note: Update API URL in repositories to point to:
 # - Local: http://10.0.2.2:3000 (Android emulator)
-# - Prod: https://ton-app.up.railway.app
+# - Prod: https://fitnessapp-production-ad23.up.railway.app
 ```
 
 ## 🐳 Docker
@@ -114,7 +115,7 @@ docker run -p 3000:3000 \
 
 **The production backend is already deployed on Railway:**
 
-- API: https://ton-app.up.railway.app
+- API: https://fitnessapp-production-ad23.up.railway.app
 - Database: Hosted on Railway PostgreSQL
 - Auto-deploys on push to `main` branch
 
