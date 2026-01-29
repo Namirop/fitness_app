@@ -46,7 +46,6 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     });
 
     on<SubmitWorkout>((event, emit) async {
-      print("SUBMIT");
       final currentWorkout = state.currentWorkout;
       emit(
         state.copyWith(
@@ -114,7 +113,6 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     });
 
     on<UpdateWorkoutDetails>((event, emit) async {
-      print("Upadate workout");
       emit(
         state.copyWith(
           cacheStatus: CacheStatus.loading,
@@ -208,7 +206,6 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     // ---------------------------------------------------------------------------
 
     on<HasCache>((event, emit) async {
-      print("HASCACHE");
       emit(
         state.copyWith(
           cacheStatus: CacheStatus.loading,
