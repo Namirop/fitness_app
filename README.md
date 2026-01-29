@@ -120,8 +120,6 @@ docker run -p 3000:3000 \
 
 **No manual deployment needed** - just push your code!
 
-```
-
 ## 📁 Project Structure
 
 ```
@@ -194,5 +192,4 @@ This project is licensed under the MIT License - see LICENSE file for details.
 
 - GitHub: [@Namirop](https://github.com/Namirop)
 - LinkedIn: www.linkedin.com/in/romainmaes
-- Portfolio: [\[TODO\]](https://romaindev.carrd.co/)
-```
+- Portfolio: https://romaindev.carrd.co/
